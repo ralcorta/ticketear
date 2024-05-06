@@ -1,42 +1,56 @@
-# ticketear
-# Proyecto para Universidad UADE
+# AWS Typescripted Lambda Boilerplate
 
-Este repositorio contiene un proyecto desarrollado para la Universidad UADE. El objetivo del proyecto es utilizar TypeScript junto con los servicios de AWS y la biblioteca LocalStack para emular la infraestructura en la nube de forma local.
+![GitHub](https://img.shields.io/github/license/zishanneno/aws-typescript-lambda-boilerplate) ![CircleCI](https://img.shields.io/circleci/build/github/zishanneno/aws-typescript-lambda-boilerplate/main) ![Codecov branch](https://img.shields.io/codecov/c/github/zishanneno/aws-typescript-lambda-boilerplate/main?token=VMXEW5DBRN)
 
-## Objetivo
-Sistema de compra de tickets online.
+## :information_desk_person: What is this?
 
-## Características
-- Configuración inicial del proyecto con TypeScript.
-- Ejemplos de configuración para servicios de AWS compatibles con LocalStack.
-- Archivos de configuración de Docker para ejecutar LocalStack localmente.
-- Ejemplos de código y plantillas para aplicaciones basadas en TypeScript y servicios de AWS.
-- Facilidad para probar la infraestructura localmente utilizando LocalStack.
+This repository contains boilerplate code for quickly getting started with developing and testing an AWS lambda locally using TypeScript, transpiling and bundling your source and modules into a single file, and performing a guided deployment using [AWS SAM](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/what-is-sam.html) (Serverless Application Model).
 
-## Instrucciones de Uso
-1. Clonar el repositorio a tu máquina local.
-2. Instalar las dependencias necesarias.
-3. Iniciar LocalStack utilizando Docker, instalar con:
-   
- - Comando (MAC): ` brew install localstack/tap/localstack-cli `.
- - Prerequisitos:
-    - docker
-    - docker-compose (version 1.9.0+)
-  
-  - Ejecutar el CLI instalado: `localstack start`
-  - Si no tenes configurado AWS anteriormente, podes hacerlo para esta ocacion usando:
-    - `aws configure set aws_access_key_id test`
-    - `aws configure set aws_secret_access_key test`
-    - `aws configure set region us-east-1`
-    Estos valores son placeholders, LocalStack no requiere credenciales de AWS reales
+## :rocket: Getting Started
 
-4. Deployar el stack de SAM: `samlocal build && samlocal deploy`
-5. Levantar las lambdas: `samlocal local start-api`
-<!-- 4. Desarrollar y probar la aplicación utilizando TypeScript y los servicios de AWS emulados localmente con LocalStack. -->
+- Install [AWS SAM CLI](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-install.html)
+- Install the dependencies by running `yarn`
+- If you prefer using `npm` instead, make sure to update `package.json` scripts.
 
-### Como utilizar localstack
+Once set up, make sure that you have Docker running. You do not need to run any containers manually.
 
-Documentacion y guia sobre como levantar localstack si tienen mas dudas: https://medium.com/@ben.meehan_27368/how-to-setup-aws-locally-using-localstack-without-spending-a-buck-1c6e20bce8
+## :computer: Commands
 
-## Contacto
-Para cualquier pregunta o consulta sobre este proyecto, por favor contacta a equipo 5.
+- `yarn dev`
+
+  - Creates a local HTTP server in Docker to run your serverless application locally
+  - Cleans `dist` and `.aws-sam` directory (if either exist)
+  - Bundles your code in `src` and outputs to `dist`
+  - Starts watching for changes in
+  - In your browser or any REST API client, a GET request to http://localhost:3000/ping will invoke the lambda.
+
+- `yarn build`
+
+  - Cleans `dist` and `.aws-sam` directory (if either exist)
+  - Bundles and minifies your code in `src` and outputs to `dist`
+  - At this point you may zip and upload the contents of the `dist` directory to your lambda manually.
+
+- `yarn sam:build`
+
+  - Performs `yarn build` and then also builds the lambda function into `.aws-sam` directory along with CloudFormation template that can be used for manual deployment.
+
+- `yarn deploy`
+
+  - Builds the lambda and CloudFormation template using `sam:build` script, and and walks you through a guided deployment.
+
+- `yarn test`
+  - Runs testing of code, compares snapshots, and outputs test coverage.
+
+## :information_source: Further Info
+
+The `template.yaml` file in the `config` directory can be configured to modify your lambda handler, path etc, and is used to build the CloudFormation template when performing a guided deployment using `yarn deploy`.
+
+In order to get readable stack traces in CloudWatch, add `NODE_OPTIONS=--enable-source-maps` to your lambda function's environment variables.
+
+For going into production, you may want to use `--sources-content=false` option in the `build` script so that source map output to CloudWatch is minimal and only shows references your source code (for example `src/index.ts:8:9`) instead of throwing complete stack traces.
+
+Why or what is `rimraf` package? Because everybody ain't using \*nix. :smile:
+
+## :sparkles: Coming up
+
+- Boilerplate code for other resources such as AWS Secrets Manager, S3, DynamoDB etc.
