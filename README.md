@@ -1,3 +1,4 @@
+# ticketear
 # Proyecto para Universidad UADE
 
 Este repositorio contiene un proyecto desarrollado para la Universidad UADE. El objetivo del proyecto es utilizar TypeScript junto con los servicios de AWS y la biblioteca LocalStack para emular la infraestructura en la nube de forma local.
@@ -29,7 +30,9 @@ Sistema de compra de tickets online.
     - `aws configure set region us-east-1`
     Estos valores son placeholders, LocalStack no requiere credenciales de AWS reales
 
-4. Desarrollar y probar la aplicación utilizando TypeScript y los servicios de AWS emulados localmente con LocalStack.
+4. Deployar el stack de SAM: `samlocal build && samlocal deploy`
+5. Levantar las lambdas: `samlocal local start-api`
+<!-- 4. Desarrollar y probar la aplicación utilizando TypeScript y los servicios de AWS emulados localmente con LocalStack. -->
 
 ### Como utilizar localstack
 
