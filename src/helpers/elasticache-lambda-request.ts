@@ -8,7 +8,7 @@ export async function elasticacheLambdaRequest(
 ) {
   AWS.config.update({ region: "us-east-1" });
   const lambda = new AWS.Lambda({
-    endpoint: "http://host.docker.internal:4566",
+    endpoint: "http://127.0.0.1:4566",
   });
   const params = {
     FunctionName: "ElasticacheManager",

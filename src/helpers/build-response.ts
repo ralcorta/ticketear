@@ -2,10 +2,13 @@ import { APIGatewayProxyResult } from "aws-lambda";
 
 export const buildResponse = (
   statusCode: number,
-  message?: string,
+  message?: any,
   error?: Error,
   requestId?: string
 ): APIGatewayProxyResult => {
+  console.info(
+    `response statusCode: ${statusCode} body: ${JSON.stringify(message)}`
+  );
   return {
     isBase64Encoded: false,
     statusCode: statusCode,

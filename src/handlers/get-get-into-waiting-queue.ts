@@ -1,7 +1,9 @@
-import { OPERATION } from "../constants";
 import { v4 as uuid } from "uuid";
-import { elasticacheLambdaRequest } from "../helpers/elasticache-lambda-request";
 import { APIGatewayProxyEvent } from "aws-lambda";
+import { QUEUES } from "../constants";
+import { redisClient } from "../helpers/redis-client";
+import { sendMessage } from "../helpers/sqs-client";
+import { buildResponse } from "../helpers/build-response";
 
 export const handler = async (event: APIGatewayProxyEvent) => {
   if (event.httpMethod !== "GET") {
@@ -9,21 +11,9 @@ export const handler = async (event: APIGatewayProxyEvent) => {
       `getMethod only accept GET method, you tried: ${event.httpMethod}`
     );
   }
-  console.info("received:", event);
-
-  const result = await elasticacheLambdaRequest(
-    OPERATION.CREATE,
-    uuid(),
-    Math.floor(new Date().getTime() / 1000).toString()
-  );
-
-  const response = {
-    statusCode: 200,
-    body: JSON.stringify(result),
-  };
-
-  console.info(
-    `response from: ${event.path} statusCode: ${response.statusCode} body: ${response.body}`
-  );
-  return response;
+  const token = uuid();
+  await redisClient.zadd(QUEUES.WAITING, new Date().getTime(), token);
+  const result = await redisClient.zrange(QUEUES.WAITING, 0, 100);
+  const sqsResult = await sendMessage(token);
+  return buildResponse(200, { token, result, sqsResult });
 };

@@ -20,7 +20,7 @@ resolve_s3 = true
 
 # s3_bucket = "aws-sam-cli-managed-default-samclisourcebucket-18ed0j5xol14m"
 s3_prefix = "ticketear"
-region = "eu-central-1"
+region = "us-east-1"
 image_repositories = []
 
 [default.package.parameters]

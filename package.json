@@ -12,11 +12,12 @@
     "esbuild": "yarn clean && esbuild src/**/*.ts --outdir=dist --bundle --platform=node --target=node20 --sourcemap",
     "sam:debug": "samlocal local start-api --template config/template.yaml --warm-containers EAGER --parameter-overrides ParameterKey=Stage,ParameterValue=dev",
     "sam:build": "yarn build && samlocal build --template config/template.yaml",
-    "sam:deploy": "samlocal deploy"
+    "sam:deploy": "samlocal deploy",
+    "testredis": "node src/test.js"
   },
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com/zishanneno/aws-typescript-lambda-boilerplate.git"
+    "url": "git+ssh://git@github.com/ralcorta/ticketear.git"
   },
   "author": "Zishan Neno",
   "license": "MIT",
@@ -44,6 +45,7 @@
     "aws-lambda": "^1.0.7",
     "http2": "^3.3.7",
     "ioredis": "^5.4.1",
+    "net": "^1.0.2",
     "uuid": "^9.0.1"
   },
   "jest-junit": {

@@ -3,23 +3,34 @@ Description: >-
   ticketear
 Transform:
 - AWS::Serverless-2016-10-31
-
+  
 # More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
 Globals:
   Function:
     # Layers:
     #     - !Ref RuntimeDependenciesLayer
+    CodeUri: ../dist/handlers/
     LoggingConfig:
       LogFormat: JSON
     Environment:
       Variables:
         STAGE: dev
         SALES_TABLE: !Ref SalesTable
+        IN_PROCESS_TABLE: !Ref InProcessTable
         REDIS_URL: !GetAtt RedisCluster.RedisEndpoint.Address
         REDIS_PORT: !GetAtt RedisCluster.RedisEndpoint.Port
+        SQS_WAITING_QUEUE_URL: !GetAtt SqsWaitingQueue.QueueUrl
+        SQS_WAITING_QUEUE_NAME: !GetAtt SqsWaitingQueue.QueueName
+        SQS_WAITING_QUEUE_ARN: !GetAtt SqsWaitingQueue.Arn
         # REDIS_LAMBDA: !GetAtt ElasticacheManager.Arn
         # REDIS_USERNAME: '{{resolve:secretsmanager:redis-caching-credentials:SecretString:username}}'
         # REDIS_AUTH_TOKEN: '{{resolve:secretsmanager:redis-caching-credentials:SecretString:authToken}}'
+    VpcConfig:
+      SubnetIds:
+        - !Ref PrivateSubnet1
+        - !Ref PrivateSubnet1
+      SecurityGroupIds:
+        - !Ref RedisSecurityGroup
     Runtime: nodejs20.x
     MemorySize: 128
     Timeout: 30
@@ -27,25 +38,25 @@ Globals:
       - arm64
       # - x86_64
 
-
-# Resources declares the AWS resources that you want to include in the stack
-# https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/resources-section-structure.html
 Resources:
-
   ################################
   #####  Lambdas Resources   #####
   ################################
-  # Each Lambda function is defined by properties:
-  # https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
   GetGetIntoWaitingQueue:
     Type: AWS::Serverless::Function
     Properties:
       Handler: get-get-into-waiting-queue.handler
-      CodeUri: ../dist/handlers/
       Policies:
-        # Give Create/Read/Update/Delete Permissions to the SalesTable
-      - DynamoDBCrudPolicy:
-          TableName: !Ref SalesTable
+        - AWSLambda_FullAccess
+        - AmazonElastiCacheFullAccess  # This policy grants full access to ElastiCache. Adjust permissions as needed.
+        - AWSLambdaVPCAccessExecutionRole  # This policy is required for Lambda to access resources inside a VPC.
+        - AWSLambdaSQSQueueExecutionRole
+        - DynamoDBCrudPolicy:
+            TableName: !Ref SalesTable
+        - SQSPollerPolicy:
+            QueueName: !GetAtt SqsWaitingQueue.QueueName
+        - SQSSendMessagePolicy:
+            QueueName: !GetAtt SqsWaitingQueue.QueueName          
       Events:
         Api:
           Type: Api
@@ -53,55 +64,93 @@ Resources:
             Path: /get-into-waiting-queue
             Method: GET
   
-  # GetCheckWaitingQueue:
-  #   Type: AWS::Serverless::Function
-  #   Properties:
-  #     Handler: get-check-waiting-queue.handler
-  #     CodeUri: ../dist/handlers/
-  #     Policies:
-  #       # Give Create/Read/Update/Delete Permissions to the SalesTable
-  #     - DynamoDBCrudPolicy:
-  #         TableName: !Ref SalesTable
-  #     Events:
-  #       Api:
-  #         Type: Api
-  #         Properties:
-  #           Path: /get-check-waiting-queue/{id}
-  #           Method: GET
-
-  # GetListAllTokensAtWaitingList:
-  #   Type: AWS::Serverless::Function
-  #   Properties:
-  #     Handler: get-list-all-tokens-at-waiting-list.handler
-  #     CodeUri: ../dist/handlers/
-  #     Policies:
-  #       # Give Create/Read/Update/Delete Permissions to the SalesTable
-  #     - DynamoDBCrudPolicy:
-  #         TableName: !Ref SalesTable
-  #     Events:
-  #       Api:
-  #         Type: Api
-  #         Properties:
-  #           Path: /list-all-tokens-at-waiting-list
-  #           Method: GET
-  
-  ElasticacheManager:
-    Type: 'AWS::Serverless::Function'
+  GetCheckWaitingQueue:
+    Type: AWS::Serverless::Function
     Properties:
-      Handler: elasticache-manager.handler
-      CodeUri: ../dist/handlers/
+      Handler: get-check-waiting-queue.handler
       Policies:
-        - AWSLambdaVPCAccessExecutionRole
-      VpcConfig:
-        SubnetIds:
-          - !Ref PrivateSubnet
-        SecurityGroupIds:
-          - !Ref RedisSecurityGroup
+        - AWSLambda_FullAccess
+        - AmazonElastiCacheFullAccess  # This policy grants full access to ElastiCache. Adjust permissions as needed.
+        - AWSLambdaVPCAccessExecutionRole  # This policy is required for Lambda to access resources inside a VPC.
+        - AWSLambdaSQSQueueExecutionRole
+        - DynamoDBCrudPolicy:
+            TableName: !Ref SalesTable
+        - SQSPollerPolicy:
+            QueueName: !GetAtt SqsWaitingQueue.QueueName
+        - SQSSendMessagePolicy:
+            QueueName: !GetAtt SqsWaitingQueue.QueueName     
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Path: /get-check-waiting-queue/{uuid}
+            Method: GET
 
+  GetListAllTokensAtWaitingList:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: get-list-all-tokens-at-waiting-list.handler
+      Policies:
+        - AWSLambda_FullAccess
+        - AmazonElastiCacheFullAccess  # This policy grants full access to ElastiCache. Adjust permissions as needed.
+        - AWSLambdaVPCAccessExecutionRole  # This policy is required for Lambda to access resources inside a VPC.
+        - AWSLambdaSQSQueueExecutionRole
+        - DynamoDBCrudPolicy:
+            TableName: !Ref SalesTable
+        - SQSPollerPolicy:
+            QueueName: !GetAtt SqsWaitingQueue.QueueName
+        - SQSSendMessagePolicy:
+            QueueName: !GetAtt SqsWaitingQueue.QueueName      
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Path: /list-all-tokens-at-waiting-list
+            Method: GET
+  
+  SQSQueueProcessFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: sqs-queue-process.handler
+      Policies:
+        - AWSLambda_FullAccess
+        - AmazonElastiCacheFullAccess  # This policy grants full access to ElastiCache. Adjust permissions as needed.
+        - AWSLambdaVPCAccessExecutionRole  # This policy is required for Lambda to access resources inside a VPC.
+        - AWSLambdaSQSQueueExecutionRole
+        - DynamoDBCrudPolicy:
+            TableName: !Ref InProcessTable
+        - SQSPollerPolicy:
+            QueueName: !GetAtt SqsWaitingQueue.QueueName
+        - SQSSendMessagePolicy:
+            QueueName: !GetAtt SqsWaitingQueue.QueueName
+      Events:
+        MySQSEvent:
+          Type: SQS
+          Properties:
+            Queue: !GetAtt SqsWaitingQueue.Arn
+            BatchSize: 1
+
+  ################################
+  #####     EVA Services     #####
+  ################################
+
+  SqsWaitingQueue:
+    Type: AWS::SQS::Queue
+  
   ################################
   ##### Databases Resources  #####
   ################################
   # DynamoDB table to store item: {id: &lt;ID&gt;, name: &lt;NAME&gt;}
+  InProcessTable:
+    Type: AWS::Serverless::SimpleTable
+    Properties:
+      PrimaryKey:
+        Name: id
+        Type: String
+      ProvisionedThroughput:
+        ReadCapacityUnits: 2
+        WriteCapacityUnits: 2
+
   SalesTable:
     Type: AWS::Serverless::SimpleTable
     Properties:
@@ -115,13 +164,12 @@ Resources:
   RedisCluster:
     Type: 'AWS::ElastiCache::CacheCluster'
     Properties:
-      CacheNodeType: cache.t2.small
+      CacheNodeType: cache.t2.micro
       Engine: redis
       NumCacheNodes: 1
       VpcSecurityGroupIds:
-        - !GetAtt RedisSecurityGroup.GroupId
-      # CacheSubnetGroupName: !Ref CacheSubnetGroup
-
+        - !Ref RedisSecurityGroup
+      CacheSubnetGroupName: !Ref CacheSubnetGroup
 
   ################################
   ##### Networking Resources #####
@@ -131,17 +179,33 @@ Resources:
     Type: AWS::EC2::VPC
     Properties:
       CidrBlock: 10.0.0.0/16
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
 
-  PrivateSubnet:
+  PrivateSubnet1:
     Type: AWS::EC2::Subnet
     Properties:
       VpcId: !Ref MyVPC
       CidrBlock: 10.0.1.0/24
 
+  PrivateSubnet2:
+    Type: 'AWS::EC2::Subnet'
+    Properties:
+      VpcId: !Ref MyVPC
+      CidrBlock: '10.0.2.0/24'
+
+  CacheSubnetGroup:
+    Type: 'AWS::ElastiCache::SubnetGroup'
+    Properties:
+      Description: Subnet group for ElastiCache
+      SubnetIds:
+        - !Ref PrivateSubnet1
+        - !Ref PrivateSubnet2
+
   RedisSecurityGroup:
     Type: 'AWS::EC2::SecurityGroup'
     Properties:
-      GroupDescription: 'Security group for Lambda to access ElastiCache'
+      GroupDescription: Security group for ElastiCache and Lambda
       VpcId: !Ref MyVPC
 
   RedisIngress:
@@ -150,25 +214,35 @@ Resources:
       GroupId: !Ref RedisSecurityGroup
       SourceSecurityGroupId: !Ref RedisSecurityGroup
       IpProtocol: tcp
-      FromPort: 6379
-      ToPort: 6379
+      FromPort: 0
+      ToPort: 65535
+      # FromPort: 6379
+      # ToPort: 6379
 
-  CustomEventBus:
-    Type: AWS::Events::EventBus
-    Properties:
-      Name: 'CustomEventBus'
-  # CacheSubnetGroup:
-  #   Type: 'AWS::ElastiCache::SubnetGroup'
+  # CustomEventBus:
+  #   Type: AWS::Events::EventBus
   #   Properties:
-  #     Description: 'Subnet group for ElastiCache'
+  #     Name: !Ref EventBusName
+
+  # This is required to allow communication from inside your VPC to EventBridge
+  # VPCEndpoint:
+  #   Type: AWS::EC2::VPCEndpoint
+  #   Properties:
+  #     VpcEndpointType: Interface
+  #     PrivateDnsEnabled: true
+  #     ServiceName: !Sub "com.amazonaws.${AWS::Region}.events"
+  #     VpcId: !Ref VpcId
+  #     SecurityGroupIds:
+  #       - !Ref RedisSecurityGroup
   #     SubnetIds:
   #       - !Ref PrivateSubnet1
+  #       - !Ref PrivateSubnet2
+
+
 
 Outputs:
   WebEndpoint:
     Description: API Gateway endpoint URL for dev stage
-    # Value:
-    #     Fn::GetAtt: getTokenUrl.FunctionUrl
     Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/dev/"
   RedisUrl:
     Description: Redis Cluster Endpoint
@@ -176,7 +250,12 @@ Outputs:
   RedisPort:
     Description: Redis Cluster Port
     Value: !GetAtt RedisCluster.RedisEndpoint.Port
-  RedisLambda:
-    Description: Redis Lambda Arn
-    Value: !Ref  ElasticacheManager
-  #   # http://607a5a09d5d45a8febd22d62c9bb672e.lambda-url.us-east-1.localhost.localstack.cloud:4566/
+  SQSqueueName:
+    Description: SQS queue name
+    Value: !GetAtt SqsWaitingQueue.QueueName
+  SQSqueueARN:
+    Description: SQS queue ARN
+    Value: !GetAtt SqsWaitingQueue.Arn
+  SQSqueueURL:
+    Description: SQS queue URL
+    Value: !GetAtt SqsWaitingQueue.QueueUrl

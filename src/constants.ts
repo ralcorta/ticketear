@@ -7,3 +7,7 @@ export enum OPERATION {
   DELETE = "DELETE",
   ZADD = "ZADD",
 }
+export enum QUEUES {
+  WAITING = "WAITING_QUEUE",
+  IN_PROCESS = "IN_PROCESS_QUEUE",
+}

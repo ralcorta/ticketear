@@ -1,58 +1,50 @@
-// // Create clients and set shared const values outside of the handler.
-
-// // Create a DocumentClient that represents the query to add an item
 // import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 // import { DynamoDBDocumentClient, GetCommand } from "@aws-sdk/lib-dynamodb";
-// // import { elasticacheLambdaRequest } from "../helpers/elasticache-lambda-request";
-// // import { OPERATION } from "../constants";
 // const client = new DynamoDBClient({});
 // const ddbDocClient = DynamoDBDocumentClient.from(client);
-// import { APIGatewayProxyEvent } from "aws-lambda";
+import { APIGatewayProxyEvent } from "aws-lambda";
+import { QUEUES } from "../constants";
+import { buildResponse } from "../helpers/build-response";
+import { redisClient } from "../helpers/redis-client";
 
-// // Get the DynamoDB table name from environment variables
-// const tableName = process.env.SALES_TABLE;
+// const inProcessTableName = process.env.IN_PROCESS_TABLE;
 
-// // const getPos = async (uuid: string) => {
-// //   const result = await elasticacheLambdaRequest(OPERATION.READ, uuid);
-// // };
+export const handler = async (event: APIGatewayProxyEvent) => {
+  if (event.httpMethod !== "GET")
+    throw new Error(
+      `getMethod only accept GET method, you tried: ${event.httpMethod}`
+    );
+  if (!event.pathParameters?.uuid)
+    throw new Error(`Token UUID not provided in the path.`);
 
-// /**
-//  * A simple example includes a HTTP get method to get one item by id from a DynamoDB table.
-//  */
-// export const handler = async (event: APIGatewayProxyEvent) => {
-//   if (event.httpMethod !== "GET") {
-//     throw new Error(
-//       `getMethod only accept GET method, you tried: ${event.httpMethod}`
-//     );
-//   }
-//   // All log statements are written to CloudWatch
-//   console.info("received:", event);
+  console.info("received:", event.pathParameters);
 
-//   // Get id from pathParameters from APIGateway because of `/{id}` at template.yaml
-//   const token: string = event.pathParameters.uuid;
+  const { uuid } = event.pathParameters;
+  const positionOnWaitingQueue = await redisClient.zrank(QUEUES.WAITING, uuid);
+  const positionOnInProgressQueue = await redisClient.zrank(
+    QUEUES.IN_PROCESS,
+    uuid
+  );
 
-//   // Get the item from the table
-//   // https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#get-property
-//   var params: any = {
-//     TableName: tableName,
-//     Key: { uuid: uuid },
-//   };
+  // let dataInProcessTable: any;
+  // try {
+  //   dataInProcessTable = await ddbDocClient.send(
+  //     new GetCommand({
+  //       TableName: inProcessTableName,
+  //       Key: { uuid },
+  //     })
+  //   );
+  // } catch (err) {
+  //   console.log("Error!!", err);
+  // }
 
-//   try {
-//     const data = await ddbDocClient.send(new GetCommand(params));
-//     var item = data;
-//   } catch (err) {
-//     console.log("Error", err);
-//   }
+  // const body: Record<string, any> = {};
 
-//   const response = {
-//     statusCode: 200,
-//     body: JSON.stringify(item),
-//   };
+  // if (positionOnWaitingList) body.positionOnWaitingList = positionOnWaitingList;
+  // else if (dataInProcessTable) body.dataInProcessTable = dataInProcessTable;
 
-//   // All log statements are written to CloudWatch
-//   console.info(
-//     `response from: ${event.path} statusCode: ${response.statusCode} body: ${response.body}`
-//   );
-//   return response;
-// };
+  return buildResponse(200, {
+    positionOnWaitingQueue,
+    positionOnInProgressQueue,
+  });
+};
