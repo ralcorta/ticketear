@@ -2,9 +2,11 @@ import AWS from "aws-sdk";
 import { PromiseResult } from "aws-sdk/lib/request";
 
 const sqsClient = new AWS.SQS({ apiVersion: "2012-11-05" });
-// const queueUrl = `http://host.docker.internal:4566/000000000000/${process.env.SQS_WAITING_QUEUE_NAME}`;
+// const queueUrl = `http://host.docker.internal:4566/000000000000/${process.env.SQS_QUEUE_NAME}`;
 const queueUrl =
-  "http://host.docker.internal:4566/000000000000/ticketear-SqsWaitingQueue-14ae9ae5";
+  process.env.STAGE === "dev"
+    ? "http://host.docker.internal:4566/000000000000/general-queue"
+    : (process.env.SQS_QUEUE_URL as string);
 
 async function sendMessage(
   message: string

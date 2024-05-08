@@ -3,28 +3,20 @@ Description: >-
   ticketear
 Transform:
 - AWS::Serverless-2016-10-31
-  
-# More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
+
 Globals:
   Function:
-    # Layers:
-    #     - !Ref RuntimeDependenciesLayer
-    CodeUri: ../dist/handlers/
     LoggingConfig:
       LogFormat: JSON
     Environment:
       Variables:
         STAGE: dev
         SALES_TABLE: !Ref SalesTable
-        IN_PROCESS_TABLE: !Ref InProcessTable
         REDIS_URL: !GetAtt RedisCluster.RedisEndpoint.Address
         REDIS_PORT: !GetAtt RedisCluster.RedisEndpoint.Port
-        SQS_WAITING_QUEUE_URL: !GetAtt SqsWaitingQueue.QueueUrl
-        SQS_WAITING_QUEUE_NAME: !GetAtt SqsWaitingQueue.QueueName
-        SQS_WAITING_QUEUE_ARN: !GetAtt SqsWaitingQueue.Arn
-        # REDIS_LAMBDA: !GetAtt ElasticacheManager.Arn
-        # REDIS_USERNAME: '{{resolve:secretsmanager:redis-caching-credentials:SecretString:username}}'
-        # REDIS_AUTH_TOKEN: '{{resolve:secretsmanager:redis-caching-credentials:SecretString:authToken}}'
+        SQS_QUEUE_URL: !GetAtt SQSQueue.QueueUrl
+        SQS_QUEUE_NAME: !GetAtt SQSQueue.QueueName
+        SQS_QUEUE_ARN: !GetAtt SQSQueue.Arn
     VpcConfig:
       SubnetIds:
         - !Ref PrivateSubnet1
@@ -36,7 +28,6 @@ Globals:
     Timeout: 30
     Architectures:
       - arm64
-      # - x86_64
 
 Resources:
   ################################
@@ -45,18 +36,18 @@ Resources:
   GetGetIntoWaitingQueue:
     Type: AWS::Serverless::Function
     Properties:
-      Handler: get-get-into-waiting-queue.handler
+      Handler: dist/handlers/get-get-into-waiting-queue.handler
       Policies:
         - AWSLambda_FullAccess
-        - AmazonElastiCacheFullAccess  # This policy grants full access to ElastiCache. Adjust permissions as needed.
-        - AWSLambdaVPCAccessExecutionRole  # This policy is required for Lambda to access resources inside a VPC.
+        - AmazonElastiCacheFullAccess  
+        - AWSLambdaVPCAccessExecutionRole  
         - AWSLambdaSQSQueueExecutionRole
         - DynamoDBCrudPolicy:
             TableName: !Ref SalesTable
         - SQSPollerPolicy:
-            QueueName: !GetAtt SqsWaitingQueue.QueueName
+            QueueName: !GetAtt SQSQueue.QueueName
         - SQSSendMessagePolicy:
-            QueueName: !GetAtt SqsWaitingQueue.QueueName          
+            QueueName: !GetAtt SQSQueue.QueueName          
       Events:
         Api:
           Type: Api
@@ -67,18 +58,18 @@ Resources:
   GetCheckWaitingQueue:
     Type: AWS::Serverless::Function
     Properties:
-      Handler: get-check-waiting-queue.handler
+      Handler: dist/handlers/get-check-waiting-queue.handler
       Policies:
         - AWSLambda_FullAccess
-        - AmazonElastiCacheFullAccess  # This policy grants full access to ElastiCache. Adjust permissions as needed.
-        - AWSLambdaVPCAccessExecutionRole  # This policy is required for Lambda to access resources inside a VPC.
+        - AmazonElastiCacheFullAccess  
+        - AWSLambdaVPCAccessExecutionRole  
         - AWSLambdaSQSQueueExecutionRole
         - DynamoDBCrudPolicy:
             TableName: !Ref SalesTable
         - SQSPollerPolicy:
-            QueueName: !GetAtt SqsWaitingQueue.QueueName
+            QueueName: !GetAtt SQSQueue.QueueName
         - SQSSendMessagePolicy:
-            QueueName: !GetAtt SqsWaitingQueue.QueueName     
+            QueueName: !GetAtt SQSQueue.QueueName     
       Events:
         Api:
           Type: Api
@@ -89,71 +80,84 @@ Resources:
   GetListAllTokensAtWaitingList:
     Type: AWS::Serverless::Function
     Properties:
-      Handler: get-list-all-tokens-at-waiting-list.handler
+      Handler: dist/handlers/get-list-all-tokens-at-waiting-list.handler
       Policies:
         - AWSLambda_FullAccess
-        - AmazonElastiCacheFullAccess  # This policy grants full access to ElastiCache. Adjust permissions as needed.
-        - AWSLambdaVPCAccessExecutionRole  # This policy is required for Lambda to access resources inside a VPC.
+        - AmazonElastiCacheFullAccess  
+        - AWSLambdaVPCAccessExecutionRole  
         - AWSLambdaSQSQueueExecutionRole
         - DynamoDBCrudPolicy:
             TableName: !Ref SalesTable
         - SQSPollerPolicy:
-            QueueName: !GetAtt SqsWaitingQueue.QueueName
+            QueueName: !GetAtt SQSQueue.QueueName
         - SQSSendMessagePolicy:
-            QueueName: !GetAtt SqsWaitingQueue.QueueName      
+            QueueName: !GetAtt SQSQueue.QueueName      
       Events:
         Api:
           Type: Api
           Properties:
             Path: /list-all-tokens-at-waiting-list
             Method: GET
+
+  PostMakePayment:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: dist/handlers/post-make-payment.handler
+      Policies:
+        - AWSLambda_FullAccess
+        - AmazonElastiCacheFullAccess  
+        - AWSLambdaVPCAccessExecutionRole  
+        - AWSLambdaSQSQueueExecutionRole
+        - DynamoDBCrudPolicy:
+            TableName: !Ref SalesTable
+        - SQSPollerPolicy:
+            QueueName: !GetAtt SQSQueue.QueueName
+        - SQSSendMessagePolicy:
+            QueueName: !GetAtt SQSQueue.QueueName          
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Path: /make-payment/{uuid}
+            Method: GET
   
   SQSQueueProcessFunction:
     Type: AWS::Serverless::Function
     Properties:
-      Handler: sqs-queue-process.handler
+      Handler: dist/handlers/sqs-queue-process.handler
       Policies:
         - AWSLambda_FullAccess
-        - AmazonElastiCacheFullAccess  # This policy grants full access to ElastiCache. Adjust permissions as needed.
-        - AWSLambdaVPCAccessExecutionRole  # This policy is required for Lambda to access resources inside a VPC.
+        - AmazonElastiCacheFullAccess  
+        - AWSLambdaVPCAccessExecutionRole
         - AWSLambdaSQSQueueExecutionRole
-        - DynamoDBCrudPolicy:
-            TableName: !Ref InProcessTable
         - SQSPollerPolicy:
-            QueueName: !GetAtt SqsWaitingQueue.QueueName
+            QueueName: !GetAtt SQSQueue.QueueName
         - SQSSendMessagePolicy:
-            QueueName: !GetAtt SqsWaitingQueue.QueueName
+            QueueName: !GetAtt SQSQueue.QueueName
       Events:
         MySQSEvent:
           Type: SQS
           Properties:
-            Queue: !GetAtt SqsWaitingQueue.Arn
+            Queue: !GetAtt SQSQueue.Arn
             BatchSize: 1
 
   ################################
   #####     EVA Services     #####
   ################################
 
-  SqsWaitingQueue:
+  SQSQueue:
     Type: AWS::SQS::Queue
+    Properties:
+      QueueName: general-queue
   
   ################################
   ##### Databases Resources  #####
   ################################
-  # DynamoDB table to store item: {id: &lt;ID&gt;, name: &lt;NAME&gt;}
-  InProcessTable:
-    Type: AWS::Serverless::SimpleTable
-    Properties:
-      PrimaryKey:
-        Name: id
-        Type: String
-      ProvisionedThroughput:
-        ReadCapacityUnits: 2
-        WriteCapacityUnits: 2
 
   SalesTable:
     Type: AWS::Serverless::SimpleTable
     Properties:
+      TableName: SalesTable
       PrimaryKey:
         Name: id
         Type: String
@@ -216,31 +220,11 @@ Resources:
       IpProtocol: tcp
       FromPort: 0
       ToPort: 65535
-      # FromPort: 6379
-      # ToPort: 6379
-
-  # CustomEventBus:
-  #   Type: AWS::Events::EventBus
-  #   Properties:
-  #     Name: !Ref EventBusName
-
-  # This is required to allow communication from inside your VPC to EventBridge
-  # VPCEndpoint:
-  #   Type: AWS::EC2::VPCEndpoint
-  #   Properties:
-  #     VpcEndpointType: Interface
-  #     PrivateDnsEnabled: true
-  #     ServiceName: !Sub "com.amazonaws.${AWS::Region}.events"
-  #     VpcId: !Ref VpcId
-  #     SecurityGroupIds:
-  #       - !Ref RedisSecurityGroup
-  #     SubnetIds:
-  #       - !Ref PrivateSubnet1
-  #       - !Ref PrivateSubnet2
-
-
 
 Outputs:
+  DynamoDBSalesTable:
+    Description: DynamoDB Sales Table
+    Value: !Ref SalesTable
   WebEndpoint:
     Description: API Gateway endpoint URL for dev stage
     Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/dev/"
@@ -252,10 +236,10 @@ Outputs:
     Value: !GetAtt RedisCluster.RedisEndpoint.Port
   SQSqueueName:
     Description: SQS queue name
-    Value: !GetAtt SqsWaitingQueue.QueueName
+    Value: !GetAtt SQSQueue.QueueName
   SQSqueueARN:
     Description: SQS queue ARN
-    Value: !GetAtt SqsWaitingQueue.Arn
+    Value: !GetAtt SQSQueue.Arn
   SQSqueueURL:
     Description: SQS queue URL
-    Value: !GetAtt SqsWaitingQueue.QueueUrl
+    Value: !GetAtt SQSQueue.QueueUrl
