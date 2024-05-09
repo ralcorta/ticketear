@@ -53,6 +53,7 @@ Resources:
         Api:
           Type: Api
           Properties:
+            RestApiId: !Ref ServerlessCrudApi
             Path: /get-into-waiting-queue
             Method: GET
   
@@ -76,6 +77,7 @@ Resources:
         Api:
           Type: Api
           Properties:
+            RestApiId: !Ref ServerlessCrudApi
             Path: /get-check-waiting-queue/{uuid}
             Method: GET
 
@@ -99,6 +101,7 @@ Resources:
         Api:
           Type: Api
           Properties:
+            RestApiId: !Ref ServerlessCrudApi
             Path: /get-memory-state
             Method: GET
 
@@ -122,6 +125,7 @@ Resources:
         Api:
           Type: Api
           Properties:
+            RestApiId: !Ref ServerlessCrudApi
             Path: /make-payment/{uuid}
             Method: GET
   
@@ -226,13 +230,24 @@ Resources:
       FromPort: 0
       ToPort: 65535
 
+  ServerlessCrudApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      Name: "serverless-crud-api"
+      StageName: "Prod"
+      Cors:
+        AllowMethods: "'POST,GET,PUT,DELETE,OPTIONS'"
+        AllowOrigin: "'*'"
+        AllowHeaders: "'Content-Type'"
+  
+
 Outputs:
   DynamoDBSalesTable:
     Description: DynamoDB Sales Table
     Value: !Ref SalesTable
-  WebEndpoint:
-    Description: API Gateway endpoint URL for dev stage
-    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/dev/"
+  # WebEndpoint:
+  #   Description: API Gateway endpoint URL for dev stage
+  #   Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/dev/"
   RedisUrl:
     Description: Redis Cluster Endpoint
     Value: !GetAtt RedisCluster.RedisEndpoint.Address
