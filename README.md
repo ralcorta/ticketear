@@ -1,7 +1,7 @@
 # ✨ ☁️ AWS Ticketear - UADE 📖 ✨
 # ✍️ Proyecto para Universidad UADE
 
-Este repositorio contiene un proyecto desarrollado para la Universidad UADE, materia arquitectura de aplicaciones. El objetivo del proyecto es utilizar los servicios de AWS para generar un proyecto que utlice una arquitectura basada en eventos.
+Este repositorio contiene un proyecto desarrollado para la Universidad UADE, materia arquitectura de aplicaciones. El objetivo del proyecto es utilizar los servicios de AWS para generar un MVP que utlice una arquitectura basada en eventos.
 
 ## 🎟️ App
 Sistema de compra de tickets online. En simples palabras, una tiquetera.
