@@ -13,6 +13,7 @@
     "sam:debug": "samlocal local start-api --template config/template.yaml --warm-containers EAGER --parameter-overrides ParameterKey=Stage,ParameterValue=dev",
     "sam:build": "yarn build && samlocal build --template config/template.yaml",
     "sam:deploy": "samlocal deploy",
+    "sam:deploy:prod": "yarn build && sam build --template config/template.yaml && sam deploy --parameter-overrides Stage=prod",
     "testredis": "node src/test.js"
   },
   "repository": {

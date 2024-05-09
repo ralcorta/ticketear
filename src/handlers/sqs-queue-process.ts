@@ -13,7 +13,7 @@ export const handler: SQSHandler = async (event: SQSEvent) => {
       const inProcessQueue = (await redisClient.keys("*")).filter(
         (key) => key !== QUEUES.WAITING
       );
-      if (inProcessQueue.length <= LIMIT_OF_PAYMENT) {
+      if (inProcessQueue.length < LIMIT_OF_PAYMENT) {
         await redisClient.set(
           uuid,
           new Date().getTime()
@@ -25,7 +25,7 @@ export const handler: SQSHandler = async (event: SQSEvent) => {
     } else if (stage == QUEUES.IN_PROCESS) {
       // USER PAID AND NEED TO REMOVE FROM IN PROCESS QUEUE AND ADD TO PROCESSED QUEUE
       await redisClient.del(uuid);
-      const [nextIntoTheProcessQueue] = await redisClient.zrevrange(
+      const [nextIntoTheProcessQueue] = await redisClient.zrange(
         QUEUES.WAITING,
         0,
         0

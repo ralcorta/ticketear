@@ -4,13 +4,22 @@ Description: >-
 Transform:
 - AWS::Serverless-2016-10-31
 
+Parameters:
+  Stage:
+    Type: String
+    Default: dev
+    AllowedValues:
+      - dev
+      - prod
+    Description: The stage for the deployment (e.g., dev, test, prod)
+
 Globals:
   Function:
     LoggingConfig:
       LogFormat: JSON
     Environment:
       Variables:
-        STAGE: dev
+        STAGE: !Ref Stage
         SALES_TABLE: !Ref SalesTable
         REDIS_URL: !GetAtt RedisCluster.RedisEndpoint.Address
         REDIS_PORT: !GetAtt RedisCluster.RedisEndpoint.Port
@@ -103,6 +112,30 @@ Resources:
           Properties:
             RestApiId: !Ref ServerlessCrudApi
             Path: /get-memory-state
+            Method: GET
+
+  ClearnMemoryState:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: get-clean-memory-state.handler
+      CodeUri: ../dist/handlers/
+      Policies:
+        - AWSLambda_FullAccess
+        - AmazonElastiCacheFullAccess  
+        - AWSLambdaVPCAccessExecutionRole  
+        - AWSLambdaSQSQueueExecutionRole
+        - DynamoDBCrudPolicy:
+            TableName: !Ref SalesTable
+        - SQSPollerPolicy:
+            QueueName: !GetAtt SQSQueue.QueueName
+        - SQSSendMessagePolicy:
+            QueueName: !GetAtt SQSQueue.QueueName
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ServerlessCrudApi
+            Path: /clean-memory-state
             Method: GET
 
   PostMakePayment:
