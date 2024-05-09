@@ -1,56 +1,55 @@
-# AWS Typescripted Lambda Boilerplate
+# ✨ ☁️ AWS Ticketear - UADE 📖 ✨
+# ✍️ Proyecto para Universidad UADE
 
-![GitHub](https://img.shields.io/github/license/zishanneno/aws-typescript-lambda-boilerplate) ![CircleCI](https://img.shields.io/circleci/build/github/zishanneno/aws-typescript-lambda-boilerplate/main) ![Codecov branch](https://img.shields.io/codecov/c/github/zishanneno/aws-typescript-lambda-boilerplate/main?token=VMXEW5DBRN)
+Este repositorio contiene un proyecto desarrollado para la Universidad UADE, materia arquitectura de aplicaciones. El objetivo del proyecto es utilizar los servicios de AWS para generar un proyecto que utlice una arquitectura basada en eventos.
 
-## :information_desk_person: What is this?
+## 🎟️ App
+Sistema de compra de tickets online. En simples palabras, una tiquetera.
 
-This repository contains boilerplate code for quickly getting started with developing and testing an AWS lambda locally using TypeScript, transpiling and bundling your source and modules into a single file, and performing a guided deployment using [AWS SAM](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/what-is-sam.html) (Serverless Application Model).
+## 🔥 Arquitectura
 
-## :rocket: Getting Started
+![Aws Arch](assets/aws-arch.png)
 
-- Install [AWS SAM CLI](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-install.html)
-- Install the dependencies by running `yarn`
-- If you prefer using `npm` instead, make sure to update `package.json` scripts.
 
-Once set up, make sure that you have Docker running. You do not need to run any containers manually.
+## Características
+- **AWS SAM**: Infraestructura basada en codigo usando AWS SAM para el deploy y las pruebas.
+- **AWS SQS**: Colas de mensajeria para arquitectura basada en eventos.
+- **AWS Elasticache**: Base de datos de tipo Redis para manejo de colas de espera.
+- **AWS Lambda**: Servicio serverless para procesamiento de datos.
+- **AWS Apigateway**: Servicio para configuracion de endpoints e invocacion de lambdas.
+- **AWS DynamoDB**: Base de datos no relacional para almacenar ventas.
+- **AWS IAM**: Manejo de usuarios, roles y permisos para con los servicios dentro de AWS.
+- **AWS VPC**: Cloud virtual privada para poder confiugrar las lambdas y tener acceso a recursos de AWS.
+- **TypeScript**: Configuración inicial del proyecto con TypeScript.
+- **LocalStack**: Configuración para servicios de AWS compatibles con LocalStack.
+  - Facilidad para probar la infraestructura localmente utilizando LocalStack.
 
-## :computer: Commands
+## :rocket:  Instrucciones de Uso
+1. Clonar el repositorio a tu máquina local.
+2. Install [AWS SAM CLI](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-install.html)
+3. Instalar las dependencias necesarias utilizando `yarn` o tu gestor de dependencias favorito.
+   1. Si usas otro como `npm`, recorda actualizar los scripts de `package.json`.
+4. Iniciar LocalStack utilizando Docker, instalar con:
+   
+ - Comando (MAC): ` brew install localstack/tap/localstack-cli `.
+ - Prerequisitos:
+    - docker
+    - docker-compose (version 1.9.0+)
+  
+  - Ejecutar el CLI instalado: `localstack start` o `docker-compose up`
+  - Si no tenes configurado AWS anteriormente, podes hacerlo para esta ocacion usando:
+    - `aws configure set aws_access_key_id test`
+    - `aws configure set aws_secret_access_key test`
+    - `aws configure set region us-east-1`
+    Estos valores son placeholders, LocalStack no requiere credenciales de AWS reales
 
-- `yarn dev`
+4. Deployar el stack de SAM: `samlocal build && samlocal deploy` para dev o `yarn sam:deploy:prod` para prod.
+5. Levantar las lambdas: `samlocal local start-api`
+<!-- 4. Desarrollar y probar la aplicación utilizando TypeScript y los servicios de AWS emulados localmente con LocalStack. -->
 
-  - Creates a local HTTP server in Docker to run your serverless application locally
-  - Cleans `dist` and `.aws-sam` directory (if either exist)
-  - Bundles your code in `src` and outputs to `dist`
-  - Starts watching for changes in
-  - In your browser or any REST API client, a GET request to http://localhost:3000/ping will invoke the lambda.
+### Como utilizar localstack
 
-- `yarn build`
+Documentacion y guia sobre como levantar localstack si tienen mas dudas: https://medium.com/@ben.meehan_27368/how-to-setup-aws-locally-using-localstack-without-spending-a-buck-1c6e20bce8
 
-  - Cleans `dist` and `.aws-sam` directory (if either exist)
-  - Bundles and minifies your code in `src` and outputs to `dist`
-  - At this point you may zip and upload the contents of the `dist` directory to your lambda manually.
-
-- `yarn sam:build`
-
-  - Performs `yarn build` and then also builds the lambda function into `.aws-sam` directory along with CloudFormation template that can be used for manual deployment.
-
-- `yarn deploy`
-
-  - Builds the lambda and CloudFormation template using `sam:build` script, and and walks you through a guided deployment.
-
-- `yarn test`
-  - Runs testing of code, compares snapshots, and outputs test coverage.
-
-## :information_source: Further Info
-
-The `template.yaml` file in the `config` directory can be configured to modify your lambda handler, path etc, and is used to build the CloudFormation template when performing a guided deployment using `yarn deploy`.
-
-In order to get readable stack traces in CloudWatch, add `NODE_OPTIONS=--enable-source-maps` to your lambda function's environment variables.
-
-For going into production, you may want to use `--sources-content=false` option in the `build` script so that source map output to CloudWatch is minimal and only shows references your source code (for example `src/index.ts:8:9`) instead of throwing complete stack traces.
-
-Why or what is `rimraf` package? Because everybody ain't using \*nix. :smile:
-
-## :sparkles: Coming up
-
-- Boilerplate code for other resources such as AWS Secrets Manager, S3, DynamoDB etc.
+## :information_source:  Contacto
+Para cualquier pregunta o consulta sobre este proyecto, por favor contacta a equipo 5.
