@@ -4,6 +4,7 @@ import { redisClient } from "../helpers/redis-client";
 import { buildResponse } from "../helpers/build-response";
 import { errorResponse } from "../helpers/error-response";
 import { dynamodb } from "../helpers/dynamo-client";
+import { sendMessage } from "../helpers/sqs-client";
 
 const salesTableName = process.env.SALES_TABLE ?? "";
 
@@ -15,12 +16,12 @@ export const handler = async (event: APIGatewayProxyEvent) => {
     );
 
   const { uuid } = event.pathParameters;
-  const exactStartingTime = await redisClient.zscore(QUEUES.IN_PROCESS, uuid);
+  const exactStartingTime = await redisClient.get(uuid);
   console.log({ exactStartingTime, uuid });
 
   if (!exactStartingTime)
     return errorResponse(
-      new Error(`Token ${uuid} is not in the IN_PROCESS queue`),
+      new Error(`Token ${uuid} is not in process`),
       event.requestContext.requestId
     );
 
@@ -50,6 +51,6 @@ export const handler = async (event: APIGatewayProxyEvent) => {
     return errorResponse(err, event.requestContext.requestId);
   }
 
-  const deleted = await redisClient.zrem(QUEUES.IN_PROCESS, uuid);
-  return buildResponse(200, { result, deleted });
+  await sendMessage(JSON.stringify({ stage: QUEUES.IN_PROCESS, uuid }));
+  return buildResponse(200, { result });
 };

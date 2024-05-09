@@ -36,7 +36,8 @@ Resources:
   GetGetIntoWaitingQueue:
     Type: AWS::Serverless::Function
     Properties:
-      Handler: dist/handlers/get-get-into-waiting-queue.handler
+      Handler: get-get-into-waiting-queue.handler
+      CodeUri: ../dist/handlers/
       Policies:
         - AWSLambda_FullAccess
         - AmazonElastiCacheFullAccess  
@@ -47,7 +48,7 @@ Resources:
         - SQSPollerPolicy:
             QueueName: !GetAtt SQSQueue.QueueName
         - SQSSendMessagePolicy:
-            QueueName: !GetAtt SQSQueue.QueueName          
+            QueueName: !GetAtt SQSQueue.QueueName
       Events:
         Api:
           Type: Api
@@ -58,7 +59,8 @@ Resources:
   GetCheckWaitingQueue:
     Type: AWS::Serverless::Function
     Properties:
-      Handler: dist/handlers/get-check-waiting-queue.handler
+      Handler: get-check-waiting-queue.handler
+      CodeUri: ../dist/handlers/
       Policies:
         - AWSLambda_FullAccess
         - AmazonElastiCacheFullAccess  
@@ -69,7 +71,7 @@ Resources:
         - SQSPollerPolicy:
             QueueName: !GetAtt SQSQueue.QueueName
         - SQSSendMessagePolicy:
-            QueueName: !GetAtt SQSQueue.QueueName     
+            QueueName: !GetAtt SQSQueue.QueueName
       Events:
         Api:
           Type: Api
@@ -77,10 +79,11 @@ Resources:
             Path: /get-check-waiting-queue/{uuid}
             Method: GET
 
-  GetListAllTokensAtWaitingList:
+  GetMemoryState:
     Type: AWS::Serverless::Function
     Properties:
-      Handler: dist/handlers/get-list-all-tokens-at-waiting-list.handler
+      Handler: get-get-memory-state.handler
+      CodeUri: ../dist/handlers/
       Policies:
         - AWSLambda_FullAccess
         - AmazonElastiCacheFullAccess  
@@ -91,18 +94,19 @@ Resources:
         - SQSPollerPolicy:
             QueueName: !GetAtt SQSQueue.QueueName
         - SQSSendMessagePolicy:
-            QueueName: !GetAtt SQSQueue.QueueName      
+            QueueName: !GetAtt SQSQueue.QueueName
       Events:
         Api:
           Type: Api
           Properties:
-            Path: /list-all-tokens-at-waiting-list
+            Path: /get-memory-state
             Method: GET
 
   PostMakePayment:
     Type: AWS::Serverless::Function
     Properties:
-      Handler: dist/handlers/post-make-payment.handler
+      Handler: post-make-payment.handler
+      CodeUri: ../dist/handlers/
       Policies:
         - AWSLambda_FullAccess
         - AmazonElastiCacheFullAccess  
@@ -113,7 +117,7 @@ Resources:
         - SQSPollerPolicy:
             QueueName: !GetAtt SQSQueue.QueueName
         - SQSSendMessagePolicy:
-            QueueName: !GetAtt SQSQueue.QueueName          
+            QueueName: !GetAtt SQSQueue.QueueName
       Events:
         Api:
           Type: Api
@@ -124,7 +128,8 @@ Resources:
   SQSQueueProcessFunction:
     Type: AWS::Serverless::Function
     Properties:
-      Handler: dist/handlers/sqs-queue-process.handler
+      Handler: sqs-queue-process.handler
+      CodeUri: ../dist/handlers/
       Policies:
         - AWSLambda_FullAccess
         - AmazonElastiCacheFullAccess  
@@ -135,7 +140,7 @@ Resources:
         - SQSSendMessagePolicy:
             QueueName: !GetAtt SQSQueue.QueueName
       Events:
-        MySQSEvent:
+        SQSQueue:
           Type: SQS
           Properties:
             Queue: !GetAtt SQSQueue.Arn
