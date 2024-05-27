@@ -85,7 +85,7 @@ export default {
             ];
           }
         });
-      }, 3000);
+      }, 1000);
     },
     beforeDestroy() {
       clearInterval(this.intervalId);
@@ -123,43 +123,6 @@ export default {
     },
   },
 };
-
-// const count = ref(0);
-// let token = "";
-// let waitingQueue = defineModel([]);
-// let inProcessQueue = defineModel([]);
-// let salesTableDynamo = defineModel([]);
-
-// async function pay() {
-//   return axios
-//     .post(
-//       `http://localhost:3000/make-payment/${token}?email=rodrigo@gmail.com`,
-//       {
-//         token,
-//       }
-//     )
-//     .then((res) => {
-//       console.log(res.data);
-//     });
-// }
-
-// async function getToken() {
-//   const result = await axios.get(
-//     "http://localhost:3000/get-into-waiting-queue"
-//   );
-//   console.log(result);
-// }
-
-// setInterval(() => {
-//   axios.get("http://localhost:3000/get-memory-state").then((res) => {
-//     if (res.data.message) {
-//       console.log(res.data);
-//       waitingQueue = [...res.data.message.waitingQueue];
-//       inProcessQueue = [...res.data.message.inProcessQueue];
-//       salesTableDynamo = [...res.data.message.salesTableDynamo.Items];
-//     }
-//   });
-// }, 3000);
 </script>
 
 <style scoped>

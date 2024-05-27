@@ -10,13 +10,14 @@ Parameters:
     Default: dev
     AllowedValues:
       - dev
+      - test
       - prod
     Description: The stage for the deployment (e.g., dev, test, prod)
 
 Globals:
   Function:
-    LoggingConfig:
-      LogFormat: JSON
+    # LoggingConfig:
+    #   LogFormat: JSON
     Environment:
       Variables:
         STAGE: !Ref Stage
@@ -28,8 +29,7 @@ Globals:
         SQS_QUEUE_ARN: !GetAtt SQSQueue.Arn
     VpcConfig:
       SubnetIds:
-        - !Ref PrivateSubnet1
-        - !Ref PrivateSubnet1
+        - !Ref PrivateSubnet
       SecurityGroupIds:
         - !Ref RedisSecurityGroup
     Runtime: nodejs20.x
@@ -42,11 +42,32 @@ Resources:
   ################################
   #####  Lambdas Resources   #####
   ################################
+  # HelloWorldFunction:
+  #   Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+  #   Properties:
+  #     CodeUri: ../src/handlers/
+  #     Handler: hello-world.handler
+  #     Events:
+  #       Api:
+  #         Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+  #         Properties:
+  #           RestApiId: !Ref ServerlessCrudApi
+  #           Path: /hello
+  #           Method: get
+  #   Metadata: # Manage esbuild properties
+  #     BuildMethod: esbuild
+  #     BuildProperties:
+  #       Minify: true
+  #       Target: "es2020"
+  #       Sourcemap: true # Enabling source maps will create the required NODE_OPTIONS environment variables on your lambda function during sam build
+  #       EntryPoints: 
+  #       - hello-world.ts
+
   GetGetIntoWaitingQueue:
     Type: AWS::Serverless::Function
     Properties:
       Handler: get-get-into-waiting-queue.handler
-      CodeUri: ../dist/handlers/
+      CodeUri: ../src/handlers/
       Policies:
         - AWSLambda_FullAccess
         - AmazonElastiCacheFullAccess  
@@ -59,18 +80,27 @@ Resources:
         - SQSSendMessagePolicy:
             QueueName: !GetAtt SQSQueue.QueueName
       Events:
-        Api:
+        GetGetIntoWaitingQueue:
           Type: Api
           Properties:
             RestApiId: !Ref ServerlessCrudApi
             Path: /get-into-waiting-queue
             Method: GET
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        # SourcesContent: false # Only false by production build
+        Sourcemap: true
+        # Minify: true
+        # Target: "es2020"
+        EntryPoints: 
+        - get-get-into-waiting-queue.ts
   
   GetCheckWaitingQueue:
     Type: AWS::Serverless::Function
     Properties:
       Handler: get-check-waiting-queue.handler
-      CodeUri: ../dist/handlers/
+      CodeUri: ../src/handlers/
       Policies:
         - AWSLambda_FullAccess
         - AmazonElastiCacheFullAccess  
@@ -83,18 +113,24 @@ Resources:
         - SQSSendMessagePolicy:
             QueueName: !GetAtt SQSQueue.QueueName
       Events:
-        Api:
+        GetCheckWaitingQueue:
           Type: Api
           Properties:
             RestApiId: !Ref ServerlessCrudApi
             Path: /get-check-waiting-queue/{uuid}
             Method: GET
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Sourcemap: true
+        EntryPoints: 
+        - get-check-waiting-queue.ts
 
   GetMemoryState:
     Type: AWS::Serverless::Function
     Properties:
       Handler: get-get-memory-state.handler
-      CodeUri: ../dist/handlers/
+      CodeUri: ../src/handlers/
       Policies:
         - AWSLambda_FullAccess
         - AmazonElastiCacheFullAccess  
@@ -107,18 +143,24 @@ Resources:
         - SQSSendMessagePolicy:
             QueueName: !GetAtt SQSQueue.QueueName
       Events:
-        Api:
+        GetMemoryState:
           Type: Api
           Properties:
             RestApiId: !Ref ServerlessCrudApi
             Path: /get-memory-state
             Method: GET
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Sourcemap: true
+        EntryPoints: 
+        - get-get-memory-state.ts
 
   ClearnMemoryState:
     Type: AWS::Serverless::Function
     Properties:
       Handler: get-clean-memory-state.handler
-      CodeUri: ../dist/handlers/
+      CodeUri: ../src/handlers/
       Policies:
         - AWSLambda_FullAccess
         - AmazonElastiCacheFullAccess  
@@ -131,18 +173,24 @@ Resources:
         - SQSSendMessagePolicy:
             QueueName: !GetAtt SQSQueue.QueueName
       Events:
-        Api:
+        ClearnMemoryState:
           Type: Api
           Properties:
             RestApiId: !Ref ServerlessCrudApi
             Path: /clean-memory-state
             Method: GET
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Sourcemap: true
+        EntryPoints: 
+        - get-clean-memory-state.ts
 
   PostMakePayment:
     Type: AWS::Serverless::Function
     Properties:
       Handler: post-make-payment.handler
-      CodeUri: ../dist/handlers/
+      CodeUri: ../src/handlers/
       Policies:
         - AWSLambda_FullAccess
         - AmazonElastiCacheFullAccess  
@@ -155,18 +203,24 @@ Resources:
         - SQSSendMessagePolicy:
             QueueName: !GetAtt SQSQueue.QueueName
       Events:
-        Api:
+        PostMakePayment:
           Type: Api
           Properties:
             RestApiId: !Ref ServerlessCrudApi
             Path: /make-payment/{uuid}
             Method: GET
-  
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Sourcemap: true
+        EntryPoints: 
+        - post-make-payment.ts
+
   SQSQueueProcessFunction:
     Type: AWS::Serverless::Function
     Properties:
       Handler: sqs-queue-process.handler
-      CodeUri: ../dist/handlers/
+      CodeUri: ../src/handlers/
       Policies:
         - AWSLambda_FullAccess
         - AmazonElastiCacheFullAccess  
@@ -177,11 +231,17 @@ Resources:
         - SQSSendMessagePolicy:
             QueueName: !GetAtt SQSQueue.QueueName
       Events:
-        SQSQueue:
+        SQSQueueProcessFunction:
           Type: SQS
           Properties:
             Queue: !GetAtt SQSQueue.Arn
             BatchSize: 1
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Sourcemap: true
+        EntryPoints: 
+        - sqs-queue-process.ts
 
   ################################
   #####     EVA Services     #####
@@ -228,25 +288,18 @@ Resources:
       EnableDnsSupport: true
       EnableDnsHostnames: true
 
-  PrivateSubnet1:
+  PrivateSubnet:
     Type: AWS::EC2::Subnet
     Properties:
       VpcId: !Ref MyVPC
       CidrBlock: 10.0.1.0/24
-
-  PrivateSubnet2:
-    Type: 'AWS::EC2::Subnet'
-    Properties:
-      VpcId: !Ref MyVPC
-      CidrBlock: '10.0.2.0/24'
 
   CacheSubnetGroup:
     Type: 'AWS::ElastiCache::SubnetGroup'
     Properties:
       Description: Subnet group for ElastiCache
       SubnetIds:
-        - !Ref PrivateSubnet1
-        - !Ref PrivateSubnet2
+        - !Ref PrivateSubnet
 
   RedisSecurityGroup:
     Type: 'AWS::EC2::SecurityGroup'
@@ -260,27 +313,34 @@ Resources:
       GroupId: !Ref RedisSecurityGroup
       SourceSecurityGroupId: !Ref RedisSecurityGroup
       IpProtocol: tcp
-      FromPort: 0
-      ToPort: 65535
+      FromPort: 6379 # 0
+      ToPort: 6379 # 65535
 
   ServerlessCrudApi:
     Type: AWS::Serverless::Api
     Properties:
       Name: "serverless-crud-api"
-      StageName: "Prod"
+      StageName: !Ref Stage
+      PropagateTags: true
+      Tags:
+        _custom_id_: test-serverless-crud-api-id
       Cors:
         AllowMethods: "'POST,GET,PUT,DELETE,OPTIONS'"
         AllowOrigin: "'*'"
         AllowHeaders: "'Content-Type'"
+        # AllowCredentials: true  Uncomment only if you choose a specific origin instead of the * wildcard.
   
 
 Outputs:
+  TestServerlessApiStructure:
+    Description: Serverless structure
+    Value: !Sub "http://localhost:4566/restapis/${ServerlessCrudApi}/${Stage}/_user_request_/"
   DynamoDBSalesTable:
     Description: DynamoDB Sales Table
     Value: !Ref SalesTable
-  # WebEndpoint:
-  #   Description: API Gateway endpoint URL for dev stage
-  #   Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/dev/"
+  AWSServerlessApiStructure:
+    Description: API Gateway endpoint URL for dev stage
+    Value: !Sub "https://${ServerlessCrudApi}.execute-api.${AWS::Region}.amazonaws.com/${Stage}/"
   RedisUrl:
     Description: Redis Cluster Endpoint
     Value: !GetAtt RedisCluster.RedisEndpoint.Address

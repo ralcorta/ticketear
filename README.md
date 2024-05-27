@@ -43,9 +43,19 @@ Sistema de compra de tickets online. En simples palabras, una tiquetera.
     - `aws configure set region us-east-1`
     Estos valores son placeholders, LocalStack no requiere credenciales de AWS reales
 
-4. Deployar el stack de SAM: `samlocal build && samlocal deploy` para dev o `yarn sam:deploy:prod` para prod.
-5. Levantar las lambdas: `samlocal local start-api`
-<!-- 4. Desarrollar y probar la aplicación utilizando TypeScript y los servicios de AWS emulados localmente con LocalStack. -->
+5. Deployar el stack de SAM: `samlocal deploy` (Ejecuta build y deploy) para dev o `yarn sam:deploy:prod` para prod.
+6. Levantar las lambdas: `npm run sync`
+
+
+## Levantar proyecto shortcut
+
+Una vez todo instalado, como reminder de como levantar todo es el siguiente:
+1. Terminal 1: `docker compose up`
+2. Terminal 2: 
+   1. `npm run deploy`
+   2. `npm run sync`
+3. Terminal 3: `npm run logs`
+
 
 ### Como utilizar localstack
 
