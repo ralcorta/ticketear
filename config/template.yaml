@@ -68,6 +68,8 @@ Resources:
     Properties:
       Handler: get-get-into-waiting-queue.handler
       CodeUri: ../src/handlers/
+      Layers:
+        - !Ref NodeDependenciesLayer
       Policies:
         - AWSLambda_FullAccess
         - AmazonElastiCacheFullAccess  
@@ -94,154 +96,177 @@ Resources:
         # Minify: true
         # Target: "es2020"
         EntryPoints: 
-        - get-get-into-waiting-queue.ts
+          - get-get-into-waiting-queue.ts
+        External:
+          - '*'
   
-  GetCheckWaitingQueue:
-    Type: AWS::Serverless::Function
-    Properties:
-      Handler: get-check-waiting-queue.handler
-      CodeUri: ../src/handlers/
-      Policies:
-        - AWSLambda_FullAccess
-        - AmazonElastiCacheFullAccess  
-        - AWSLambdaVPCAccessExecutionRole  
-        - AWSLambdaSQSQueueExecutionRole
-        - DynamoDBCrudPolicy:
-            TableName: !Ref SalesTable
-        - SQSPollerPolicy:
-            QueueName: !GetAtt SQSQueue.QueueName
-        - SQSSendMessagePolicy:
-            QueueName: !GetAtt SQSQueue.QueueName
-      Events:
-        GetCheckWaitingQueue:
-          Type: Api
-          Properties:
-            RestApiId: !Ref ServerlessCrudApi
-            Path: /get-check-waiting-queue/{uuid}
-            Method: GET
-    Metadata:
-      BuildMethod: esbuild
-      BuildProperties:
-        Sourcemap: true
-        EntryPoints: 
-        - get-check-waiting-queue.ts
+  # GetCheckWaitingQueue:
+  #   Type: AWS::Serverless::Function
+  #   Properties:
+  #     Handler: get-check-waiting-queue.handler
+  #     CodeUri: ../src/handlers/
+  #     Layers:
+  #       - !Ref NodeDependenciesLayer
+  #     Policies:
+  #       - AWSLambda_FullAccess
+  #       - AmazonElastiCacheFullAccess  
+  #       - AWSLambdaVPCAccessExecutionRole  
+  #       - AWSLambdaSQSQueueExecutionRole
+  #       - DynamoDBCrudPolicy:
+  #           TableName: !Ref SalesTable
+  #       - SQSPollerPolicy:
+  #           QueueName: !GetAtt SQSQueue.QueueName
+  #       - SQSSendMessagePolicy:
+  #           QueueName: !GetAtt SQSQueue.QueueName
+  #     Events:
+  #       GetCheckWaitingQueue:
+  #         Type: Api
+  #         Properties:
+  #           RestApiId: !Ref ServerlessCrudApi
+  #           Path: /get-check-waiting-queue/{uuid}
+  #           Method: GET
+  #   Metadata:
+  #     BuildMethod: esbuild
+  #     BuildProperties:
+  #       Sourcemap: true
+  #       EntryPoints: 
+  #       - get-check-waiting-queue.ts
 
-  GetMemoryState:
-    Type: AWS::Serverless::Function
-    Properties:
-      Handler: get-get-memory-state.handler
-      CodeUri: ../src/handlers/
-      Policies:
-        - AWSLambda_FullAccess
-        - AmazonElastiCacheFullAccess  
-        - AWSLambdaVPCAccessExecutionRole  
-        - AWSLambdaSQSQueueExecutionRole
-        - DynamoDBCrudPolicy:
-            TableName: !Ref SalesTable
-        - SQSPollerPolicy:
-            QueueName: !GetAtt SQSQueue.QueueName
-        - SQSSendMessagePolicy:
-            QueueName: !GetAtt SQSQueue.QueueName
-      Events:
-        GetMemoryState:
-          Type: Api
-          Properties:
-            RestApiId: !Ref ServerlessCrudApi
-            Path: /get-memory-state
-            Method: GET
-    Metadata:
-      BuildMethod: esbuild
-      BuildProperties:
-        Sourcemap: true
-        EntryPoints: 
-        - get-get-memory-state.ts
+  # GetMemoryState:
+  #   Type: AWS::Serverless::Function
+  #   Properties:
+  #     Handler: get-get-memory-state.handler
+  #     CodeUri: ../src/handlers/
+  #     Layers:
+  #       - !Ref NodeDependenciesLayer
+  #     Policies:
+  #       - AWSLambda_FullAccess
+  #       - AmazonElastiCacheFullAccess  
+  #       - AWSLambdaVPCAccessExecutionRole  
+  #       - AWSLambdaSQSQueueExecutionRole
+  #       - DynamoDBCrudPolicy:
+  #           TableName: !Ref SalesTable
+  #       - SQSPollerPolicy:
+  #           QueueName: !GetAtt SQSQueue.QueueName
+  #       - SQSSendMessagePolicy:
+  #           QueueName: !GetAtt SQSQueue.QueueName
+  #     Events:
+  #       GetMemoryState:
+  #         Type: Api
+  #         Properties:
+  #           RestApiId: !Ref ServerlessCrudApi
+  #           Path: /get-memory-state
+  #           Method: GET
+  #   Metadata:
+  #     BuildMethod: esbuild
+  #     BuildProperties:
+  #       Sourcemap: true
+  #       EntryPoints: 
+  #       - get-get-memory-state.ts
 
-  ClearnMemoryState:
-    Type: AWS::Serverless::Function
-    Properties:
-      Handler: get-clean-memory-state.handler
-      CodeUri: ../src/handlers/
-      Policies:
-        - AWSLambda_FullAccess
-        - AmazonElastiCacheFullAccess  
-        - AWSLambdaVPCAccessExecutionRole  
-        - AWSLambdaSQSQueueExecutionRole
-        - DynamoDBCrudPolicy:
-            TableName: !Ref SalesTable
-        - SQSPollerPolicy:
-            QueueName: !GetAtt SQSQueue.QueueName
-        - SQSSendMessagePolicy:
-            QueueName: !GetAtt SQSQueue.QueueName
-      Events:
-        ClearnMemoryState:
-          Type: Api
-          Properties:
-            RestApiId: !Ref ServerlessCrudApi
-            Path: /clean-memory-state
-            Method: GET
-    Metadata:
-      BuildMethod: esbuild
-      BuildProperties:
-        Sourcemap: true
-        EntryPoints: 
-        - get-clean-memory-state.ts
+  # ClearnMemoryState:
+  #   Type: AWS::Serverless::Function
+  #   Properties:
+  #     Handler: get-clean-memory-state.handler
+  #     CodeUri: ../src/handlers/
+  #     Layers:
+  #       - !Ref NodeDependenciesLayer
+  #     Policies:
+  #       - AWSLambda_FullAccess
+  #       - AmazonElastiCacheFullAccess  
+  #       - AWSLambdaVPCAccessExecutionRole  
+  #       - AWSLambdaSQSQueueExecutionRole
+  #       - DynamoDBCrudPolicy:
+  #           TableName: !Ref SalesTable
+  #       - SQSPollerPolicy:
+  #           QueueName: !GetAtt SQSQueue.QueueName
+  #       - SQSSendMessagePolicy:
+  #           QueueName: !GetAtt SQSQueue.QueueName
+  #     Events:
+  #       ClearnMemoryState:
+  #         Type: Api
+  #         Properties:
+  #           RestApiId: !Ref ServerlessCrudApi
+  #           Path: /clean-memory-state
+  #           Method: GET
+  #   Metadata:
+  #     BuildMethod: esbuild
+  #     BuildProperties:
+  #       Sourcemap: true
+  #       EntryPoints: 
+  #       - get-clean-memory-state.ts
 
-  PostMakePayment:
-    Type: AWS::Serverless::Function
-    Properties:
-      Handler: post-make-payment.handler
-      CodeUri: ../src/handlers/
-      Policies:
-        - AWSLambda_FullAccess
-        - AmazonElastiCacheFullAccess  
-        - AWSLambdaVPCAccessExecutionRole  
-        - AWSLambdaSQSQueueExecutionRole
-        - DynamoDBCrudPolicy:
-            TableName: !Ref SalesTable
-        - SQSPollerPolicy:
-            QueueName: !GetAtt SQSQueue.QueueName
-        - SQSSendMessagePolicy:
-            QueueName: !GetAtt SQSQueue.QueueName
-      Events:
-        PostMakePayment:
-          Type: Api
-          Properties:
-            RestApiId: !Ref ServerlessCrudApi
-            Path: /make-payment/{uuid}
-            Method: GET
-    Metadata:
-      BuildMethod: esbuild
-      BuildProperties:
-        Sourcemap: true
-        EntryPoints: 
-        - post-make-payment.ts
+  # PostMakePayment:
+  #   Type: AWS::Serverless::Function
+  #   Properties:
+  #     Handler: post-make-payment.handler
+  #     CodeUri: ../src/handlers/
+  #     Layers:
+  #       - !Ref NodeDependenciesLayer
+  #     Policies:
+  #       - AWSLambda_FullAccess
+  #       - AmazonElastiCacheFullAccess  
+  #       - AWSLambdaVPCAccessExecutionRole  
+  #       - AWSLambdaSQSQueueExecutionRole
+  #       - DynamoDBCrudPolicy:
+  #           TableName: !Ref SalesTable
+  #       - SQSPollerPolicy:
+  #           QueueName: !GetAtt SQSQueue.QueueName
+  #       - SQSSendMessagePolicy:
+  #           QueueName: !GetAtt SQSQueue.QueueName
+  #     Events:
+  #       PostMakePayment:
+  #         Type: Api
+  #         Properties:
+  #           RestApiId: !Ref ServerlessCrudApi
+  #           Path: /make-payment/{uuid}
+  #           Method: GET
+  #   Metadata:
+  #     BuildMethod: esbuild
+  #     BuildProperties:
+  #       Sourcemap: true
+  #       EntryPoints: 
+  #       - post-make-payment.ts
 
-  SQSQueueProcessFunction:
-    Type: AWS::Serverless::Function
+  # SQSQueueProcessFunction:
+  #   Type: AWS::Serverless::Function
+  #   Properties:
+  #     Handler: sqs-queue-process.handler
+  #     CodeUri: ../src/handlers/
+  #     Layers:
+  #       - !Ref NodeDependenciesLayer
+  #     Policies:
+  #       - AWSLambda_FullAccess
+  #       - AmazonElastiCacheFullAccess  
+  #       - AWSLambdaVPCAccessExecutionRole
+  #       - AWSLambdaSQSQueueExecutionRole
+  #       - SQSPollerPolicy:
+  #           QueueName: !GetAtt SQSQueue.QueueName
+  #       - SQSSendMessagePolicy:
+  #           QueueName: !GetAtt SQSQueue.QueueName
+  #     Events:
+  #       SQSQueueProcessFunction:
+  #         Type: SQS
+  #         Properties:
+  #           Queue: !GetAtt SQSQueue.Arn
+  #           BatchSize: 1
+  #   Metadata:
+  #     BuildMethod: esbuild
+  #     BuildProperties:
+  #       Sourcemap: true
+  #       EntryPoints: 
+  #       - sqs-queue-process.ts
+    
+  NodeDependenciesLayer:
+    Type: AWS::Serverless::LayerVersion
     Properties:
-      Handler: sqs-queue-process.handler
-      CodeUri: ../src/handlers/
-      Policies:
-        - AWSLambda_FullAccess
-        - AmazonElastiCacheFullAccess  
-        - AWSLambdaVPCAccessExecutionRole
-        - AWSLambdaSQSQueueExecutionRole
-        - SQSPollerPolicy:
-            QueueName: !GetAtt SQSQueue.QueueName
-        - SQSSendMessagePolicy:
-            QueueName: !GetAtt SQSQueue.QueueName
-      Events:
-        SQSQueueProcessFunction:
-          Type: SQS
-          Properties:
-            Queue: !GetAtt SQSQueue.Arn
-            BatchSize: 1
-    Metadata:
-      BuildMethod: esbuild
-      BuildProperties:
-        Sourcemap: true
-        EntryPoints: 
-        - sqs-queue-process.ts
+        LayerName: node-dependencies-layer
+        Description: Dependencies for the app
+        ContentUri: src/layers/common/
+        CompatibleRuntimes:
+          - nodejs20.x
+        LicenseInfo: 'MIT'
+        RetentionPolicy: Retain
 
   ################################
   #####     EVA Services     #####
