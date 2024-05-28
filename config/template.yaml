@@ -66,10 +66,10 @@ Resources:
   GetGetIntoWaitingQueue:
     Type: AWS::Serverless::Function
     Properties:
-      Handler: get-get-into-waiting-queue.handler
-      CodeUri: ../src/handlers/
-      Layers:
-        - !Ref NodeDependenciesLayer
+      Handler: index.handler
+      CodeUri: ../dist/handlers/get-get-into-waiting-queue
+      # Layers:
+      #   - !Ref NodeDependenciesLayer
       Policies:
         - AWSLambda_FullAccess
         - AmazonElastiCacheFullAccess  
@@ -88,17 +88,18 @@ Resources:
             RestApiId: !Ref ServerlessCrudApi
             Path: /get-into-waiting-queue
             Method: GET
-    Metadata:
-      BuildMethod: esbuild
-      BuildProperties:
-        # SourcesContent: false # Only false by production build
-        Sourcemap: true
-        # Minify: true
-        # Target: "es2020"
-        EntryPoints: 
-          - get-get-into-waiting-queue.ts
-        External:
-          - '*'
+    # Metadata:
+    #   BuildMethod: esbuild
+    #   BuildProperties:
+    #     # SourcesContent: false # Only false by production build
+    #     # Sourcemap: true
+    #     # Minify: true
+    #     # Target: "es2020"
+    #     EntryPoints: 
+    #       - get-get-into-waiting-queue.ts
+    #     # External:
+    #       # - "../layers/common/nodejs/node_modules/*"
+    #       # - "../../node_modules/*"
   
   # GetCheckWaitingQueue:
   #   Type: AWS::Serverless::Function
@@ -257,16 +258,17 @@ Resources:
   #       EntryPoints: 
   #       - sqs-queue-process.ts
     
-  NodeDependenciesLayer:
-    Type: AWS::Serverless::LayerVersion
-    Properties:
-        LayerName: node-dependencies-layer
-        Description: Dependencies for the app
-        ContentUri: src/layers/common/
-        CompatibleRuntimes:
-          - nodejs20.x
-        LicenseInfo: 'MIT'
-        RetentionPolicy: Retain
+  # NodeDependenciesLayer:
+  #   Type: AWS::Serverless::LayerVersion
+  #   Properties:
+  #       LayerName: node-dependencies-layer
+  #       Description: Dependencies for the app
+  #       ContentUri: ../dist/layers/common/
+  # #       ContentUri: ..
+  #       CompatibleRuntimes:
+  #         - nodejs20.x
+  #       LicenseInfo: 'MIT'
+  #       RetentionPolicy: Retain
 
   ################################
   #####     EVA Services     #####

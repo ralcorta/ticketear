@@ -1,8 +1,8 @@
 import { v4 as uuid } from 'uuid';
-import { QUEUES } from '../constants';
-import { redisClient } from '../helpers/redis-client';
-import { sendMessage } from '../helpers/sqs-client';
-import { buildResponse } from '../helpers/build-response';
+import { QUEUES } from '../../constants';
+import { redisClient } from '../../helpers/redis-client';
+import { sendMessage } from '../../helpers/sqs-client';
+import { buildResponse } from '../../helpers/build-response';
 
 export const handler = async () => {
     const token = uuid();
