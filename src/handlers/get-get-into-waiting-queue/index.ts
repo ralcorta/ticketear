@@ -8,5 +8,7 @@ export const handler = async () => {
     const token = uuid();
     await redisClient.zadd(QUEUES.WAITING, new Date().getTime(), token);
     const sqs = await sendMessage(JSON.stringify({ stage: QUEUES.WAITING, uuid: token }));
+    console.log('change2');
+
     return buildResponse(200, { token, sqs });
 };

@@ -42,34 +42,13 @@ Resources:
   ################################
   #####  Lambdas Resources   #####
   ################################
-  # HelloWorldFunction:
-  #   Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
-  #   Properties:
-  #     CodeUri: ../src/handlers/
-  #     Handler: hello-world.handler
-  #     Events:
-  #       Api:
-  #         Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
-  #         Properties:
-  #           RestApiId: !Ref ServerlessCrudApi
-  #           Path: /hello
-  #           Method: get
-  #   Metadata: # Manage esbuild properties
-  #     BuildMethod: esbuild
-  #     BuildProperties:
-  #       Minify: true
-  #       Target: "es2020"
-  #       Sourcemap: true # Enabling source maps will create the required NODE_OPTIONS environment variables on your lambda function during sam build
-  #       EntryPoints: 
-  #       - hello-world.ts
-
   GetGetIntoWaitingQueue:
     Type: AWS::Serverless::Function
     Properties:
       Handler: index.handler
       CodeUri: ../dist/handlers/get-get-into-waiting-queue
-      # Layers:
-      #   - !Ref NodeDependenciesLayer
+      Layers:
+        - !Ref NodeDependenciesLayer
       Policies:
         - AWSLambda_FullAccess
         - AmazonElastiCacheFullAccess  
@@ -88,6 +67,7 @@ Resources:
             RestApiId: !Ref ServerlessCrudApi
             Path: /get-into-waiting-queue
             Method: GET
+
     # Metadata:
     #   BuildMethod: esbuild
     #   BuildProperties:
@@ -258,17 +238,19 @@ Resources:
   #       EntryPoints: 
   #       - sqs-queue-process.ts
     
-  # NodeDependenciesLayer:
-  #   Type: AWS::Serverless::LayerVersion
-  #   Properties:
-  #       LayerName: node-dependencies-layer
-  #       Description: Dependencies for the app
-  #       ContentUri: ../dist/layers/common/
-  # #       ContentUri: ..
-  #       CompatibleRuntimes:
-  #         - nodejs20.x
-  #       LicenseInfo: 'MIT'
-  #       RetentionPolicy: Retain
+  NodeDependenciesLayer:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+        # LayerName: node-dependencies-layer
+        Description: Dependencies for the app
+        ContentUri: ..
+        CompatibleRuntimes:
+          - nodejs20.x
+        LicenseInfo: 'MIT'
+        RetentionPolicy: Delete
+    Metadata:
+      BuildMethod: makefile
+      BuildArchitecture: arm64
 
   ################################
   #####     EVA Services     #####
