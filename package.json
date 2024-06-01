@@ -10,8 +10,8 @@
     "clean": "rimraf ./dist && rimraf ./.aws-sam",
     "dev": "npm run sam:debug & npm run esbuild --watch",
     "deploy": "npm run sam:build && npm run sam:deploy",
-    "sync:all": "samlocal sync --template config/template.yaml --watch --stack-name ticketear --region us-east-1",
-    "sync": "samlocal sync --template config/template.yaml --code --watch --stack-name ticketear --region us-east-1",
+    "sync:all": "samlocal sync --template config/template.yaml --watch --stack-name ticketear --region us-east-1 --build-in-source",
+    "sync": "samlocal sync --template config/template.yaml --code --watch --stack-name ticketear --region us-east-1 --build-in-source --resource AWS::Serverless::Function",
     "logs": "samlocal logs --stack-name ticketear --tail --region us-east-1 --filter INFO",
     "logs:all": "samlocal logs --stack-name ticketear --tail --region us-east-1",
     "esbuild": "npm run clean && esbuild src/**/*.ts --outdir=dist --bundle --packages=external --platform=node --target=node20 --sourcemap --minify",
@@ -19,9 +19,9 @@
     "builder:watch": "npm run builder watch",
     "sam:build": "samlocal build --template config/template.yaml --build-in-source",
     "sam:deploy": "samlocal deploy --no-confirm-changeset",
-    "sam:debug": "samlocal local start-api --template config/template.yaml --warm-containers EAGER --parameter-overrides ParameterKey=Stage,ParameterValue=dev",
+    "sam:debug": "samlocal local start-api --template config/template.yaml --warm-containers LAZY --parameter-overrides ParameterKey=Stage,ParameterValue=dev --skip-pull-image",
     "sam:deploy:prod": "npm run build && sam build --template config/template.yaml && sam deploy --parameter-overrides Stage=prod",
-    "sync:parallel": "npm-run-all --parallel builder:watch sync:code"
+    "sync:parallel": "npm-run-all --parallel builder:watch sync"
   },
   "repository": {
     "type": "git",

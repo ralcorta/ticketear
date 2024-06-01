@@ -5,7 +5,6 @@ usage() {
     exit 1
 }
 
-# Parse arguments
 while getopts "l:d:r:" opt; do
     case $opt in
         l)
@@ -34,26 +33,9 @@ layerNodeModules="$ARTIFACTS_DIR/nodejs/node_modules"
 layerLockFile="$ARTIFACTS_DIR/nodejs/$lockFile"
 layerDepFile="$ARTIFACTS_DIR/nodejs/$depsFile"
 
-echo layerLockFile: $layerLockFile
-echo rootLockFile: $rootLockFile
-
-
-
-
-if [ -d "$layerNodeModules" ]; then
-    echo layerNodeModules
-else
-    echo NOOlayerNodeModules
-fi
-
-if [ -f "$layerLockFile" ]; then
-    echo layerLockFile
-else
-    echo NOOlayerLockFile
-fi
-
-
-# STATUS="$(cmp --silent $layerLockFile $rootLockFile; echo $?)"  # "$?" gives exit status for each comparison
+echo "$ARTIFACTS_DIR"
+folder="$(ls $ARTIFACTS_DIR/nodejs)"
+echo "$folder"
 
 if [ -d "$layerNodeModules" ] && [ -f "$layerLockFile" ] && cmp -s "$layerLockFile" "$rootLockFile"; then
     echo "No dependencies changed. Skipping layer update."
