@@ -33,10 +33,6 @@ layerNodeModules="$ARTIFACTS_DIR/nodejs/node_modules"
 layerLockFile="$ARTIFACTS_DIR/nodejs/$lockFile"
 layerDepFile="$ARTIFACTS_DIR/nodejs/$depsFile"
 
-echo "$ARTIFACTS_DIR"
-folder="$(ls $ARTIFACTS_DIR/nodejs)"
-echo "$folder"
-
 if [ -d "$layerNodeModules" ] && [ -f "$layerLockFile" ] && cmp -s "$layerLockFile" "$rootLockFile"; then
     echo "No dependencies changed. Skipping layer update."
 else
@@ -48,7 +44,7 @@ else
     install="ci"
     if [ ! -f "$rootLockFile" ]; then
         echo "package-lock.json file do not exist on root folder. building..."
-        install="c"
+        install="i"
     fi
     npm "$install" --prefix ${ARTIFACTS_DIR}/nodejs --production 
 fi

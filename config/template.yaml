@@ -14,273 +14,31 @@ Parameters:
       - prod
     Description: The stage for the deployment (e.g., dev, test, prod)
 
-Globals:
-  Function:
-    # LoggingConfig:
-    #   LogFormat: JSON
-    Environment:
-      Variables:
-        STAGE: !Ref Stage
-        SALES_TABLE: !Ref SalesTable
-        REDIS_URL: !GetAtt RedisCluster.RedisEndpoint.Address
-        REDIS_PORT: !GetAtt RedisCluster.RedisEndpoint.Port
-        SQS_QUEUE_URL: !GetAtt SQSQueue.QueueUrl
-        SQS_QUEUE_NAME: !GetAtt SQSQueue.QueueName
-        SQS_QUEUE_ARN: !GetAtt SQSQueue.Arn
-    VpcConfig:
-      SubnetIds:
-        - !Ref PrivateSubnet
-      SecurityGroupIds:
-        - !Ref RedisSecurityGroup
-    Runtime: nodejs20.x
-    MemorySize: 128
-    Timeout: 30
-    Architectures:
-      - arm64
+# Globals:
+#   Function:
+#     # LoggingConfig:
+#     #   LogFormat: JSON
+#     # Environment:
+#     #   Variables:
+#     #     STAGE: !Ref Stage
+#     #     SALES_TABLE: !Ref SalesTable
+#     #     REDIS_URL: !GetAtt RedisCluster.RedisEndpoint.Address
+#     #     REDIS_PORT: !GetAtt RedisCluster.RedisEndpoint.Port
+#     #     SQS_QUEUE_URL: !GetAtt SQSQueue.QueueUrl
+#     #     SQS_QUEUE_NAME: !GetAtt SQSQueue.QueueName
+#     #     SQS_QUEUE_ARN: !GetAtt SQSQueue.Arn
+#     # VpcConfig:
+#     #   SubnetIds:
+#     #     - !Ref PrivateSubnet
+#     #   SecurityGroupIds:
+#     #     - !Ref RedisSecurityGroup
+#     # Runtime: nodejs20.x
+#     MemorySize: 128
+#     Timeout: 30
+#     Architectures:
+#       - arm64
 
 Resources:
-  ################################
-  #####  Lambdas Resources   #####
-  ################################
-  GetGetIntoWaitingQueue:
-    Type: AWS::Serverless::Function
-    Properties:
-      Handler: index.handler
-      CodeUri: ../dist/handlers/get-get-into-waiting-queue
-      Layers:
-        - !Ref NodeDependenciesLayer
-      Policies:
-        - AWSLambda_FullAccess
-        - AmazonElastiCacheFullAccess  
-        - AWSLambdaVPCAccessExecutionRole  
-        - AWSLambdaSQSQueueExecutionRole
-        - DynamoDBCrudPolicy:
-            TableName: !Ref SalesTable
-        - SQSPollerPolicy:
-            QueueName: !GetAtt SQSQueue.QueueName
-        - SQSSendMessagePolicy:
-            QueueName: !GetAtt SQSQueue.QueueName
-      Events:
-        GetGetIntoWaitingQueue:
-          Type: Api
-          Properties:
-            RestApiId: !Ref ServerlessCrudApi
-            Path: /get-into-waiting-queue
-            Method: GET
-  
-  GetCheckWaitingQueue:
-    Type: AWS::Serverless::Function
-    Properties:
-      Handler: index.handler
-      CodeUri: ../dist/handlers/get-check-waiting-queue
-      Layers:
-        - !Ref NodeDependenciesLayer
-      Policies:
-        - AWSLambda_FullAccess
-        - AmazonElastiCacheFullAccess  
-        - AWSLambdaVPCAccessExecutionRole  
-        - AWSLambdaSQSQueueExecutionRole
-        - DynamoDBCrudPolicy:
-            TableName: !Ref SalesTable
-        - SQSPollerPolicy:
-            QueueName: !GetAtt SQSQueue.QueueName
-        - SQSSendMessagePolicy:
-            QueueName: !GetAtt SQSQueue.QueueName
-      Events:
-        GetCheckWaitingQueue:
-          Type: Api
-          Properties:
-            RestApiId: !Ref ServerlessCrudApi
-            Path: /get-check-waiting-queue/{uuid}
-            Method: GET
-
-  GetMemoryState:
-    Type: AWS::Serverless::Function
-    Properties:
-      Handler: index.handler
-      CodeUri: ../dist/handlers/get-get-memory-state
-      Layers:
-        - !Ref NodeDependenciesLayer
-      Policies:
-        - AWSLambda_FullAccess
-        - AmazonElastiCacheFullAccess  
-        - AWSLambdaVPCAccessExecutionRole  
-        - AWSLambdaSQSQueueExecutionRole
-        - DynamoDBCrudPolicy:
-            TableName: !Ref SalesTable
-        - SQSPollerPolicy:
-            QueueName: !GetAtt SQSQueue.QueueName
-        - SQSSendMessagePolicy:
-            QueueName: !GetAtt SQSQueue.QueueName
-      Events:
-        GetMemoryState:
-          Type: Api
-          Properties:
-            RestApiId: !Ref ServerlessCrudApi
-            Path: /get-memory-state
-            Method: GET
-
-  ClearnMemoryState:
-    Type: AWS::Serverless::Function
-    Properties:
-      Handler: index.handler
-      CodeUri: ../dist/handlers/get-clean-memory-state
-      Layers:
-        - !Ref NodeDependenciesLayer
-      Policies:
-        - AWSLambda_FullAccess
-        - AmazonElastiCacheFullAccess  
-        - AWSLambdaVPCAccessExecutionRole  
-        - AWSLambdaSQSQueueExecutionRole
-        - DynamoDBCrudPolicy:
-            TableName: !Ref SalesTable
-        - SQSPollerPolicy:
-            QueueName: !GetAtt SQSQueue.QueueName
-        - SQSSendMessagePolicy:
-            QueueName: !GetAtt SQSQueue.QueueName
-      Events:
-        ClearnMemoryState:
-          Type: Api
-          Properties:
-            RestApiId: !Ref ServerlessCrudApi
-            Path: /clean-memory-state
-            Method: GET
-
-  PostMakePayment:
-    Type: AWS::Serverless::Function
-    Properties:
-      Handler: index.handler
-      CodeUri: ../dist/handlers/post-make-payment
-      Layers:
-        - !Ref NodeDependenciesLayer
-      Policies:
-        - AWSLambda_FullAccess
-        - AmazonElastiCacheFullAccess  
-        - AWSLambdaVPCAccessExecutionRole  
-        - AWSLambdaSQSQueueExecutionRole
-        - DynamoDBCrudPolicy:
-            TableName: !Ref SalesTable
-        - SQSPollerPolicy:
-            QueueName: !GetAtt SQSQueue.QueueName
-        - SQSSendMessagePolicy:
-            QueueName: !GetAtt SQSQueue.QueueName
-      Events:
-        PostMakePayment:
-          Type: Api
-          Properties:
-            RestApiId: !Ref ServerlessCrudApi
-            Path: /make-payment/{uuid}
-            Method: GET
-
-  SQSQueueProcessFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      Handler: index.handler
-      CodeUri: ../dist/handlers/sqs-queue-process
-      Layers:
-        - !Ref NodeDependenciesLayer
-      Policies:
-        - AWSLambda_FullAccess
-        - AmazonElastiCacheFullAccess  
-        - AWSLambdaVPCAccessExecutionRole
-        - AWSLambdaSQSQueueExecutionRole
-        - SQSPollerPolicy:
-            QueueName: !GetAtt SQSQueue.QueueName
-        - SQSSendMessagePolicy:
-            QueueName: !GetAtt SQSQueue.QueueName
-      Events:
-        SQSQueueProcessFunction:
-          Type: SQS
-          Properties:
-            Queue: !GetAtt SQSQueue.Arn
-            BatchSize: 1
-    
-  NodeDependenciesLayer:
-    Type: AWS::Serverless::LayerVersion
-    Properties:
-        # LayerName: node-dependencies-layer
-        Description: Dependencies for the app
-        ContentUri: ..
-        CompatibleRuntimes:
-          - nodejs20.x
-        LicenseInfo: 'MIT'
-        RetentionPolicy: Delete
-    Metadata:
-      BuildMethod: makefile
-      BuildArchitecture: arm64
-
-  ################################
-  #####     EVA Services     #####
-  ################################
-
-  SQSQueue:
-    Type: AWS::SQS::Queue
-    Properties:
-      QueueName: general-queue
-  
-  ################################
-  ##### Databases Resources  #####
-  ################################
-
-  SalesTable:
-    Type: AWS::Serverless::SimpleTable
-    Properties:
-      TableName: SalesTable
-      PrimaryKey:
-        Name: id
-        Type: String
-      ProvisionedThroughput:
-        ReadCapacityUnits: 2
-        WriteCapacityUnits: 2
-    
-  RedisCluster:
-    Type: 'AWS::ElastiCache::CacheCluster'
-    Properties:
-      CacheNodeType: cache.t2.micro
-      Engine: redis
-      NumCacheNodes: 1
-      VpcSecurityGroupIds:
-        - !Ref RedisSecurityGroup
-      CacheSubnetGroupName: !Ref CacheSubnetGroup
-
-  ################################
-  ##### Networking Resources #####
-  ################################
-
-  MyVPC:
-    Type: AWS::EC2::VPC
-    Properties:
-      CidrBlock: 10.0.0.0/16
-      EnableDnsSupport: true
-      EnableDnsHostnames: true
-
-  PrivateSubnet:
-    Type: AWS::EC2::Subnet
-    Properties:
-      VpcId: !Ref MyVPC
-      CidrBlock: 10.0.1.0/24
-
-  CacheSubnetGroup:
-    Type: 'AWS::ElastiCache::SubnetGroup'
-    Properties:
-      Description: Subnet group for ElastiCache
-      SubnetIds:
-        - !Ref PrivateSubnet
-
-  RedisSecurityGroup:
-    Type: 'AWS::EC2::SecurityGroup'
-    Properties:
-      GroupDescription: Security group for ElastiCache and Lambda
-      VpcId: !Ref MyVPC
-
-  RedisIngress:
-    Type: AWS::EC2::SecurityGroupIngress
-    Properties:
-      GroupId: !Ref RedisSecurityGroup
-      SourceSecurityGroupId: !Ref RedisSecurityGroup
-      IpProtocol: tcp
-      FromPort: 6379 # 0
-      ToPort: 6379 # 65535
 
   ServerlessCrudApi:
     Type: AWS::Serverless::Api
@@ -295,30 +53,309 @@ Resources:
         AllowOrigin: "'*'"
         AllowHeaders: "'Content-Type'"
         # AllowCredentials: true  Uncomment only if you choose a specific origin instead of the * wildcard.
-  
 
-Outputs:
-  TestServerlessApiStructure:
-    Description: Serverless structure
-    Value: !Sub "http://localhost:4566/restapis/${ServerlessCrudApi}/${Stage}/_user_request_/"
-  DynamoDBSalesTable:
-    Description: DynamoDB Sales Table
-    Value: !Ref SalesTable
-  AWSServerlessApiStructure:
-    Description: API Gateway endpoint URL for dev stage
-    Value: !Sub "https://${ServerlessCrudApi}.execute-api.${AWS::Region}.amazonaws.com/${Stage}/"
-  RedisUrl:
-    Description: Redis Cluster Endpoint
-    Value: !GetAtt RedisCluster.RedisEndpoint.Address
-  RedisPort:
-    Description: Redis Cluster Port
-    Value: !GetAtt RedisCluster.RedisEndpoint.Port
-  SQSqueueName:
-    Description: SQS queue name
-    Value: !GetAtt SQSQueue.QueueName
-  SQSqueueARN:
-    Description: SQS queue ARN
-    Value: !GetAtt SQSQueue.Arn
-  SQSqueueURL:
-    Description: SQS queue URL
-    Value: !GetAtt SQSQueue.QueueUrl
+  ################################
+  #####  Lambdas Resources   #####
+  ################################
+  BunLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: app.handler
+      CodeUri: ../src/handlers/
+      Layers:
+        - !Ref BunDependenciesLayer
+        # - arn:aws:lambda:us-east-1:000000000000:layer:bun-layer:1
+      Policies:
+        - AWSLambda_FullAccess
+      MemorySize: 128
+      Timeout: 30
+      Runtime: provided.al2
+      Architectures:
+        - arm64
+      Events:
+        BunLambda:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ServerlessCrudApi
+            Path: /test
+            Method: GET
+
+  BunDependenciesLayer:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+        # LayerName: node-dependencies-layer
+        Description: Dependencies for the app
+        ContentUri: ../bun-lambda
+        LicenseInfo: 'MIT'
+        RetentionPolicy: Delete
+    Metadata:
+      BuildMethod: makefile
+      BuildArchitecture: arm64
+
+  # GetGetIntoWaitingQueue:
+  #   Type: AWS::Serverless::Function
+  #   Properties:
+  #     Handler: index.handler
+  #     CodeUri: ../dist/handlers/get-get-into-waiting-queue
+  #     Layers:
+  #       - !Ref NodeDependenciesLayer
+  #     Policies:
+  #       - AWSLambda_FullAccess
+  #       - AmazonElastiCacheFullAccess  
+  #       - AWSLambdaVPCAccessExecutionRole  
+  #       - AWSLambdaSQSQueueExecutionRole
+  #       - DynamoDBCrudPolicy:
+  #           TableName: !Ref SalesTable
+  #       - SQSPollerPolicy:
+  #           QueueName: !GetAtt SQSQueue.QueueName
+  #       - SQSSendMessagePolicy:
+  #           QueueName: !GetAtt SQSQueue.QueueName
+  #     Events:
+  #       GetGetIntoWaitingQueue:
+  #         Type: Api
+  #         Properties:
+  #           RestApiId: !Ref ServerlessCrudApi
+  #           Path: /get-into-waiting-queue
+  #           Method: GET
+  
+  # GetCheckWaitingQueue:
+  #   Type: AWS::Serverless::Function
+  #   Properties:
+  #     Handler: index.handler
+  #     CodeUri: ../dist/handlers/get-check-waiting-queue
+  #     Layers:
+  #       - !Ref NodeDependenciesLayer
+  #     Policies:
+  #       - AWSLambda_FullAccess
+  #       - AmazonElastiCacheFullAccess  
+  #       - AWSLambdaVPCAccessExecutionRole  
+  #       - AWSLambdaSQSQueueExecutionRole
+  #       - DynamoDBCrudPolicy:
+  #           TableName: !Ref SalesTable
+  #       - SQSPollerPolicy:
+  #           QueueName: !GetAtt SQSQueue.QueueName
+  #       - SQSSendMessagePolicy:
+  #           QueueName: !GetAtt SQSQueue.QueueName
+  #     Events:
+  #       GetCheckWaitingQueue:
+  #         Type: Api
+  #         Properties:
+  #           RestApiId: !Ref ServerlessCrudApi
+  #           Path: /get-check-waiting-queue/{uuid}
+  #           Method: GET
+
+  # GetMemoryState:
+  #   Type: AWS::Serverless::Function
+  #   Properties:
+  #     Handler: index.handler
+  #     CodeUri: ../dist/handlers/get-get-memory-state
+  #     Layers:
+  #       - !Ref NodeDependenciesLayer
+  #     Policies:
+  #       - AWSLambda_FullAccess
+  #       - AmazonElastiCacheFullAccess  
+  #       - AWSLambdaVPCAccessExecutionRole  
+  #       - AWSLambdaSQSQueueExecutionRole
+  #       - DynamoDBCrudPolicy:
+  #           TableName: !Ref SalesTable
+  #       - SQSPollerPolicy:
+  #           QueueName: !GetAtt SQSQueue.QueueName
+  #       - SQSSendMessagePolicy:
+  #           QueueName: !GetAtt SQSQueue.QueueName
+  #     Events:
+  #       GetMemoryState:
+  #         Type: Api
+  #         Properties:
+  #           RestApiId: !Ref ServerlessCrudApi
+  #           Path: /get-memory-state
+  #           Method: GET
+
+  # ClearnMemoryState:
+  #   Type: AWS::Serverless::Function
+  #   Properties:
+  #     Handler: index.handler
+  #     CodeUri: ../dist/handlers/get-clean-memory-state
+  #     Layers:
+  #       - !Ref NodeDependenciesLayer
+  #     Policies:
+  #       - AWSLambda_FullAccess
+  #       - AmazonElastiCacheFullAccess  
+  #       - AWSLambdaVPCAccessExecutionRole  
+  #       - AWSLambdaSQSQueueExecutionRole
+  #       - DynamoDBCrudPolicy:
+  #           TableName: !Ref SalesTable
+  #       - SQSPollerPolicy:
+  #           QueueName: !GetAtt SQSQueue.QueueName
+  #       - SQSSendMessagePolicy:
+  #           QueueName: !GetAtt SQSQueue.QueueName
+  #     Events:
+  #       ClearnMemoryState:
+  #         Type: Api
+  #         Properties:
+  #           RestApiId: !Ref ServerlessCrudApi
+  #           Path: /clean-memory-state
+  #           Method: GET
+
+  # PostMakePayment:
+  #   Type: AWS::Serverless::Function
+  #   Properties:
+  #     Handler: index.handler
+  #     CodeUri: ../dist/handlers/post-make-payment
+  #     Layers:
+  #       - !Ref NodeDependenciesLayer
+  #     Policies:
+  #       - AWSLambda_FullAccess
+  #       - AmazonElastiCacheFullAccess  
+  #       - AWSLambdaVPCAccessExecutionRole  
+  #       - AWSLambdaSQSQueueExecutionRole
+  #       - DynamoDBCrudPolicy:
+  #           TableName: !Ref SalesTable
+  #       - SQSPollerPolicy:
+  #           QueueName: !GetAtt SQSQueue.QueueName
+  #       - SQSSendMessagePolicy:
+  #           QueueName: !GetAtt SQSQueue.QueueName
+  #     Events:
+  #       PostMakePayment:
+  #         Type: Api
+  #         Properties:
+  #           RestApiId: !Ref ServerlessCrudApi
+  #           Path: /make-payment/{uuid}
+  #           Method: GET
+
+  # SQSQueueProcessFunction:
+  #   Type: AWS::Serverless::Function
+  #   Properties:
+  #     Handler: index.handler
+  #     CodeUri: ../dist/handlers/sqs-queue-process
+  #     Layers:
+  #       - !Ref NodeDependenciesLayer
+  #     Policies:
+  #       - AWSLambda_FullAccess
+  #       - AmazonElastiCacheFullAccess  
+  #       - AWSLambdaVPCAccessExecutionRole
+  #       - AWSLambdaSQSQueueExecutionRole
+  #       - SQSPollerPolicy:
+  #           QueueName: !GetAtt SQSQueue.QueueName
+  #       - SQSSendMessagePolicy:
+  #           QueueName: !GetAtt SQSQueue.QueueName
+  #     Events:
+  #       SQSQueueProcessFunction:
+  #         Type: SQS
+  #         Properties:
+  #           Queue: !GetAtt SQSQueue.Arn
+  #           BatchSize: 1
+    
+  # NodeDependenciesLayer:
+  #   Type: AWS::Serverless::LayerVersion
+  #   Properties:
+  #       # LayerName: node-dependencies-layer
+  #       Description: Dependencies for the app
+  #       ContentUri: ../layers/common
+  #       CompatibleRuntimes:
+  #         - nodejs20.x
+  #       LicenseInfo: 'MIT'
+  #       RetentionPolicy: Delete
+  #   Metadata:
+  #     BuildMethod: makefile
+  #     BuildArchitecture: arm64
+
+#   ################################
+#   #####     EVA Services     #####
+#   ################################
+
+#   SQSQueue:
+#     Type: AWS::SQS::Queue
+#     Properties:
+#       QueueName: general-queue
+  
+#   ################################
+#   ##### Databases Resources  #####
+#   ################################
+
+#   SalesTable:
+#     Type: AWS::Serverless::SimpleTable
+#     Properties:
+#       TableName: SalesTable
+#       PrimaryKey:
+#         Name: id
+#         Type: String
+#       ProvisionedThroughput:
+#         ReadCapacityUnits: 2
+#         WriteCapacityUnits: 2
+    
+#   RedisCluster:
+#     Type: 'AWS::ElastiCache::CacheCluster'
+#     Properties:
+#       CacheNodeType: cache.t2.micro
+#       Engine: redis
+#       NumCacheNodes: 1
+#       VpcSecurityGroupIds:
+#         - !Ref RedisSecurityGroup
+#       CacheSubnetGroupName: !Ref CacheSubnetGroup
+
+#   ################################
+#   ##### Networking Resources #####
+#   ################################
+
+#   MyVPC:
+#     Type: AWS::EC2::VPC
+#     Properties:
+#       CidrBlock: 10.0.0.0/16
+#       EnableDnsSupport: true
+#       EnableDnsHostnames: true
+
+#   PrivateSubnet:
+#     Type: AWS::EC2::Subnet
+#     Properties:
+#       VpcId: !Ref MyVPC
+#       CidrBlock: 10.0.1.0/24
+
+#   CacheSubnetGroup:
+#     Type: 'AWS::ElastiCache::SubnetGroup'
+#     Properties:
+#       Description: Subnet group for ElastiCache
+#       SubnetIds:
+#         - !Ref PrivateSubnet
+
+#   RedisSecurityGroup:
+#     Type: 'AWS::EC2::SecurityGroup'
+#     Properties:
+#       GroupDescription: Security group for ElastiCache and Lambda
+#       VpcId: !Ref MyVPC
+
+#   RedisIngress:
+#     Type: AWS::EC2::SecurityGroupIngress
+#     Properties:
+#       GroupId: !Ref RedisSecurityGroup
+#       SourceSecurityGroupId: !Ref RedisSecurityGroup
+#       IpProtocol: tcp
+#       FromPort: 6379 # 0
+#       ToPort: 6379 # 65535
+
+ 
+
+# Outputs:
+#   TestServerlessApiStructure:
+#     Description: Serverless structure
+#     Value: !Sub "http://localhost:4566/restapis/${ServerlessCrudApi}/${Stage}/_user_request_/"
+#   DynamoDBSalesTable:
+#     Description: DynamoDB Sales Table
+#     Value: !Ref SalesTable
+#   AWSServerlessApiStructure:
+#     Description: API Gateway endpoint URL for dev stage
+#     Value: !Sub "https://${ServerlessCrudApi}.execute-api.${AWS::Region}.amazonaws.com/${Stage}/"
+#   RedisUrl:
+#     Description: Redis Cluster Endpoint
+#     Value: !GetAtt RedisCluster.RedisEndpoint.Address
+#   RedisPort:
+#     Description: Redis Cluster Port
+#     Value: !GetAtt RedisCluster.RedisEndpoint.Port
+#   SQSqueueName:
+#     Description: SQS queue name
+#     Value: !GetAtt SQSQueue.QueueName
+#   SQSqueueARN:
+#     Description: SQS queue ARN
+#     Value: !GetAtt SQSQueue.Arn
+#   SQSqueueURL:
+#     Description: SQS queue URL
+#     Value: !GetAtt SQSQueue.QueueUrl

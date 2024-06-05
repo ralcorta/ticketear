@@ -1,6 +1,6 @@
 import { context, build } from 'esbuild';
 import { nodeExternalsPlugin } from 'esbuild-node-externals';
-import { argv, exit } from 'node:process';
+import { argv } from 'node:process';
 
 const watch = argv?.[2] === 'watch';
 
