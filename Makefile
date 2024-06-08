@@ -6,7 +6,6 @@ SHELL := /bin/bash
 # 	../../../scripts/build-layer-dependencies.sh -l NodeDependenciesLayer -d ${ARTIFACTS_DIR} -r $$CURRENT_DIR;
 
 build-NodeDependenciesLayer:
-	@CURRENT_DIR=$$(pwd); \
 	mkdir -p ${ARTIFACTS_DIR}/nodejs; \
 	cp package.json "$$ARTIFACTS_DIR/nodejs/package.json"; \
 	cp package-lock.json "$$ARTIFACTS_DIR/nodejs/package-lock.json"; \

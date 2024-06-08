@@ -60,11 +60,10 @@ Resources:
   BunLambda:
     Type: AWS::Serverless::Function
     Properties:
-      Handler: app.handler
+      Handler: app.fetch
       CodeUri: ../src/handlers/
       Layers:
         - !Ref BunDependenciesLayer
-        # - arn:aws:lambda:us-east-1:000000000000:layer:bun-layer:1
       Policies:
         - AWSLambda_FullAccess
       MemorySize: 128
@@ -83,9 +82,29 @@ Resources:
   BunDependenciesLayer:
     Type: AWS::Serverless::LayerVersion
     Properties:
+        LayerName: bun
+        Description: Bun is an incredibly fast JavaScript runtime, bundler, transpiler, and package manager.
+        ContentUri: ../layers/bun-lambda/bun-lambda.zip
+        LicenseInfo: 'MIT'
+        RetentionPolicy: Delete
+        CompatibleArchitectures:
+          - "arm64"
+        CompatibleRuntimes:
+          - "provided.al2"
+          - "provided"
+    # Metadata:
+    #   BuildMethod: makefile
+    #   BuildArchitecture: arm64
+
+  BunNodeModulesLayer:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
         # LayerName: node-dependencies-layer
         Description: Dependencies for the app
-        ContentUri: ../bun-lambda
+        ContentUri: ..
+        CompatibleRuntimes:
+          - "provided.al2"
+          - "provided"
         LicenseInfo: 'MIT'
         RetentionPolicy: Delete
     Metadata:
