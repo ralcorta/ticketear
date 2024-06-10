@@ -92,9 +92,6 @@ Resources:
         CompatibleRuntimes:
           - "provided.al2"
           - "provided"
-    # Metadata:
-    #   BuildMethod: makefile
-    #   BuildArchitecture: arm64
 
   BunNodeModulesLayer:
     Type: AWS::Serverless::LayerVersion
