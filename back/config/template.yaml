@@ -16,8 +16,8 @@ Parameters:
 
 Globals:
   Function:
-    # LoggingConfig:
-    #   LogFormat: JSON
+    LoggingConfig:
+      LogFormat: JSON
     Environment:
       Variables:
         STAGE: !Ref Stage
@@ -200,7 +200,7 @@ Resources:
     Properties:
         # LayerName: node-dependencies-layer
         Description: Dependencies for the app
-        ContentUri: ..
+        ContentUri: ../layers/common/
         CompatibleRuntimes:
           - nodejs20.x
         LicenseInfo: 'MIT'
@@ -294,7 +294,7 @@ Resources:
         AllowMethods: "'POST,GET,PUT,DELETE,OPTIONS'"
         AllowOrigin: "'*'"
         AllowHeaders: "'Content-Type'"
-        # AllowCredentials: true  Uncomment only if you choose a specific origin instead of the * wildcard.
+        # AllowCredentials: true # Uncomment only if you choose a specific origin instead of the * wildcard.
   
 
 Outputs:

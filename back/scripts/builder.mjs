@@ -1,6 +1,6 @@
 import { context, build } from 'esbuild';
 import { nodeExternalsPlugin } from 'esbuild-node-externals';
-import { argv, exit } from 'node:process';
+import { argv, cwd, exit } from 'node:process';
 
 const watch = argv?.[2] === 'watch';
 
@@ -14,7 +14,11 @@ const builder = async () => {
         sourcemap: false,
         minify: true,
         packages: 'external',
-        plugins: [nodeExternalsPlugin()],
+        plugins: [
+            nodeExternalsPlugin({
+                // packagePath: [`${cwd()}/package.json`, 'layers/common/package.json'],
+            }),
+        ],
     };
     await build(config);
     console.log('Build complete!');
